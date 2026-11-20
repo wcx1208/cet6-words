@@ -1618,6 +1618,7 @@ else{bx.textContent=cw+"（关联拓展词）";play(cw)}
 let currentAudio=null,currentAudioTimer=null;
 function stopAudio(){
 if(currentAudioTimer){clearTimeout(currentAudioTimer);currentAudioTimer=null}
+try{if(window.AndroidAudio&&typeof window.AndroidAudio.stop==="function")window.AndroidAudio.stop()}catch(e){}
 if(currentAudio){
 try{
 currentAudio.onplaying=null;currentAudio.oncanplaythrough=null;currentAudio.onended=null;currentAudio.onerror=null;

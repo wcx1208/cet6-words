@@ -259,6 +259,7 @@ class MainActivity : Activity() {
         val bar = if (dark) BG_DARK else BG_LIGHT
         window.statusBarColor = bar
         window.navigationBarColor = bar
+        web.setBackgroundColor(bar)
         val light = WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS or
                 WindowInsetsController.APPEARANCE_LIGHT_NAVIGATION_BARS
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
@@ -298,6 +299,16 @@ class MainActivity : Activity() {
         }
 
         @JavascriptInterface
+        fun stop() {
+            runOnUiThread {
+                runCatching {
+                    player?.release()
+                    player = null
+                }
+            }
+        }
+
+        @JavascriptInterface
         fun setDark(dark: Boolean) {
             runOnUiThread { applySystemBars(dark) }
         }
@@ -319,6 +330,7 @@ class MainActivity : Activity() {
             "(function(){try{" +
                     "var m=document.getElementById('modal-root');" +
                     "if(m&&m.innerHTML.trim()){closeModal();return 'nav';}" +
+                    "if(typeof page!=='undefined'&&page==='study'&&typeof finishOrExitStudy==='function'){finishOrExitStudy();return 'nav';}" +
                     "if(typeof page!=='undefined'&&page!=='home'){go('home');return 'nav';}" +
                     "return 'exit';}catch(e){return 'exit';}})()"
         ) { result ->
@@ -347,8 +359,8 @@ class MainActivity : Activity() {
     private companion object {
         const val REQ_PICK_IMAGE = 1001
 
-        val BG_LIGHT: Int = Color.rgb(0xF7, 0xF8, 0xFA)
-        val BG_DARK: Int = Color.rgb(0x0F, 0x12, 0x18)
+        val BG_LIGHT: Int = Color.rgb(0xEB, 0xF0, 0xFA)
+        val BG_DARK: Int = Color.rgb(0x07, 0x0A, 0x12)
 
         /** 注入脚本：离线发音 + 状态栏主题联动 */
         val JS_BRIDGE = """

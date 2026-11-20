@@ -6,3 +6,6 @@ package-lock.json
 release/
 web_v3.0.zip
 docs/
+local.properties
+.gradle/
+app/build/
