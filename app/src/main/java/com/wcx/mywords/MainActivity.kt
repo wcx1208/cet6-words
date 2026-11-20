@@ -19,7 +19,14 @@ import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import org.json.JSONObject
+import java.io.File
+import java.io.FileOutputStream
+import java.net.HttpURLConnection
+import java.net.URL
+import java.security.MessageDigest
 import java.util.Locale
+import java.util.zip.ZipEntry
+import java.util.zip.ZipInputStream
 import kotlin.math.roundToInt
 
 /**
@@ -204,20 +211,149 @@ class MainActivity : Activity() {
     }.getOrNull()
 
 
-    /** 建立词 -> 音频文件索引（6078 条，一次性约几十毫秒） */
+    /** 与生成端一致：小写，非字母数字连续串压成单个下划线 */
+    private fun audioKey(word: String): String =
+        word.trim().lowercase(Locale.US)
+            .replace(Regex("[^a-z0-9]+"), "_")
+            .trim('_')
+
+    /** 建立词 -> 音频文件索引（一次性约几十毫秒） */
     private fun indexAudio() {
         runCatching {
             assets.list("audio/us")?.forEach { fn ->
                 val base = fn.substringBeforeLast('.')
-                audioMap[base.lowercase(Locale.US)] = base
+                audioMap[audioKey(base)] = base
             }
         }
     }
 
     /** 词 -> 实际音频文件名（去扩展名），找不到返回 null */
     private fun resolveAsset(word: String): String? {
-        val key = word.trim().lowercase(Locale.US)
+        val key = audioKey(word)
         return if (key.isEmpty()) null else audioMap[key]
+    }
+
+    // ==================== 例句离线音频 ====================
+
+    private fun sentDir(): File = File(filesDir, "sent_audio").apply { if (!exists()) mkdirs() }
+
+    /** 与生成端 tts_gen.py 的 canon() 完全一致，保证 md5 键一致 */
+    private fun canonText(t: String): String {
+        var x = t.trim()
+        x = x.replace(Regex("^[.\\u2026]+|[.\\u2026]+\u0024"), "")
+        x = x.replace(Regex("[\\u00a0\\u2000-\\u200b\\u3000]"), " ")
+        x = x.replace(Regex("\\s{2,}"), " ").trim()
+        return x
+    }
+
+    private fun sentKey(text: String): String {
+        val d = MessageDigest.getInstance("MD5").digest(canonText(text).toByteArray(Charsets.UTF_8))
+        return d.joinToString("") { "%02x".format(it) }.substring(0, 16)
+    }
+
+    private fun sentFile(text: String): File = File(sentDir(), sentKey(text) + ".mp3")
+
+    private fun playLocalFile(f: File) {
+        runCatching {
+            player?.release(); player = null
+            val p = MediaPlayer()
+            p.setDataSource(f.absolutePath)
+            p.setOnCompletionListener { mp ->
+                runCatching { mp.release() }
+                if (player === mp) player = null
+            }
+            p.setOnErrorListener { mp, _, _ ->
+                runCatching { mp.release() }
+                if (player === mp) player = null
+                true
+            }
+            p.prepare()
+            p.start()
+            player = p
+        }
+    }
+
+    private fun baiduTtsUrl(text: String, spd: Int): String =
+        "https://fanyi.baidu.com/gettts?lan=en&text=" +
+            java.net.URLEncoder.encode(text, "UTF-8") + "&spd=$spd&source=web&per=0"
+
+    /** 后台把一句的发音下载到本地缓存（下次离线可播） */
+    private fun cacheSentenceAsync(text: String) {
+        Thread {
+            runCatching {
+                val f = sentFile(text)
+                if (f.exists() && f.length() > 3500) return@Thread
+                val tmp = File(sentDir(), f.name + ".tmp")
+                val conn = URL(baiduTtsUrl(canonText(text), 4)).openConnection() as HttpURLConnection
+                conn.connectTimeout = 15000; conn.readTimeout = 30000
+                conn.setRequestProperty("User-Agent", "Mozilla/5.0")
+                conn.inputStream.use { inp -> FileOutputStream(tmp).use { out -> inp.copyTo(out) } }
+                if (tmp.length() > 3500) {
+                    if (f.exists()) f.delete()
+                    tmp.renameTo(f)
+                } else tmp.delete()
+            }
+        }.start()
+    }
+
+    // ---------- 语音包下载状态 ----------
+    @Volatile private var packState = "idle"   // idle / downloading / done / error
+    @Volatile private var packDone = 0L
+    @Volatile private var packTotal = -1L
+    @Volatile private var packUnzip = 0
+    @Volatile private var packError = ""
+
+    private fun packCount(): Int = sentDir().listFiles()?.count { it.name.endsWith(".mp3") } ?: 0
+
+    private fun setPackState(v: String) {
+        packState = v
+        runOnUiThread {
+            runCatching { web.evaluateJavascript("document.dispatchEvent(new CustomEvent('packstate'))", null) }
+        }
+    }
+
+    private fun downloadPackAsync(url: String) {
+        if (packState == "downloading") return
+        Thread {
+            try {
+                setPackState("downloading")
+                packDone = 0; packTotal = -1; packUnzip = 0; packError = ""
+                val tmpZip = File(cacheDir, "sent_pack.zip")
+                val conn = URL(url).openConnection() as HttpURLConnection
+                conn.connectTimeout = 20000; conn.readTimeout = 60000
+                conn.instanceFollowRedirects = true
+                conn.setRequestProperty("User-Agent", "Mozilla/5.0")
+                packTotal = conn.contentLengthLong
+                conn.inputStream.use { inp ->
+                    FileOutputStream(tmpZip).use { out ->
+                        val buf = ByteArray(64 * 1024)
+                        while (true) {
+                            val n = inp.read(buf)
+                            if (n < 0) break
+                            out.write(buf, 0, n); packDone += n
+                        }
+                    }
+                }
+                ZipInputStream(tmpZip.inputStream().buffered()).use { zis ->
+                    val dir = sentDir()
+                    while (true) {
+                        val e: ZipEntry = zis.nextEntry ?: break
+                        if (!e.isDirectory && e.name.endsWith(".mp3")) {
+                            val outF = File(dir, File(e.name).name)
+                            FileOutputStream(outF).use { zis.copyTo(it) }
+                            packUnzip++
+                        }
+                        zis.closeEntry()
+                    }
+                }
+                tmpZip.delete()
+                setPackState(if (packUnzip > 0) "done" else "error")
+                if (packUnzip == 0) packError = "包内无音频文件"
+            } catch (e: Exception) {
+                packError = e.message ?: "下载失败"
+                setPackState("error")
+            }
+        }.start()
     }
 
     /** 必须在主线程调用：MediaPlayer 内部要建 Handler，需要 Looper */
@@ -311,6 +447,39 @@ class MainActivity : Activity() {
         @JavascriptInterface
         fun setDark(dark: Boolean) {
             runOnUiThread { applySystemBars(dark) }
+        }
+
+        /** 例句本地发音：有缓存返回 true 并直接播放 */
+        @JavascriptInterface
+        fun sentencePlay(text: String): Boolean {
+            val f = sentFile(text)
+            if (!f.exists() || f.length() < 3500) return false
+            runOnUiThread { runCatching { playLocalFile(f) } }
+            return true
+        }
+
+        /** 在线播放后顺手缓存，下次离线可用 */
+        @JavascriptInterface
+        fun cacheSentence(text: String) {
+            cacheSentenceAsync(text)
+        }
+
+        /** 已离线缓存的例句数量 */
+        @JavascriptInterface
+        fun packCount(): Int = packCount()
+
+        /** 一键下载整包例句发音（zip） */
+        @JavascriptInterface
+        fun downloadPack(url: String) {
+            downloadPackAsync(url)
+        }
+
+        /** 下载状态，供 JS 轮询：JSON */
+        @JavascriptInterface
+        fun packStatus(): String {
+            val percent = if (packTotal > 0) (packDone * 100 / packTotal).toInt() else -1
+            val err = packError.replace("\"", "'")
+            return "{\"state\":\"$packState\",\"percent\":$percent,\"unzip\":$packUnzip,\"count\":${packCount()},\"error\":\"$err\"}"
         }
     }
 

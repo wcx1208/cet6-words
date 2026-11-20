@@ -1324,6 +1324,15 @@ WALLS.filter(x=>x[0]!=="custom").map(([wid,wn,wbg])=>`<button type="button" clas
 </section>
 
 <section class="box set-group">
+<h2 class="sec-title">离线例句发音</h2>
+<div class="set-row">
+<div><div class="set-lbl">例句语音包（${SENT_TOTAL} 句）</div><div class="set-desc" id="pack-txt">${packIsNative()?(function(){const st=packStateNow();if(st&&st.state==="downloading")return "下载中…";const c=window.AndroidAudio.packCount();return c>0?("已离线缓存 "+c+" / "+SENT_TOTAL+" 句 · 整包约 50MB"):"下载整包后，全部例句发音可离线播放"}):(function(){const st=packStateNow();return "网页版支持在线朗读；整包离线下载仅安卓版提供"})()}</div></div>
+<button type="button" class="btn subtle sm" style="min-height:40px;padding:0 12px" onclick="downloadSentPack()">下载整包</button>
+</div>
+<div class="pbar brand" style="margin-top:8px"><i id="pack-bar" style="width:0%"></i></div>
+</section>
+
+<section class="box set-group">
 <h2 class="sec-title"><span>学习目标与 FSRS 调度</span><button type="button" class="pill-action" onclick="openPlanModal()">智能规划</button></h2>
 <div class="set-row">
 <div><label class="set-lbl" for="inp-exam-date">六级考试日期</label><div class="set-desc">距考试 ${sp.daysLeft} 天 · 自动推算每日最佳词量</div></div>
@@ -1646,7 +1655,7 @@ if(nativePlay(raw))return;
 const cleanW=sanitizeAudioText(raw);
 if(!cleanW)return;
 try{
-const a=new Audio("https://dict.youdao.com/dictvoice?type=2&audio="+encodeURIComponent(cleanW));
+const a=new Audio(ttsUrl(cleanW));
 currentAudio=a;
 let started=false;
 currentAudioTimer=setTimeout(()=>{if(currentAudio===a&&!started){started=true;playTts(cleanW)}},2200);
@@ -1670,6 +1679,9 @@ stopAudio();
 const cleanS=String(s||"").replace(/[\u00a0\u2000-\u200b\u3000]/g," ").trim();
 if(!cleanS)return;
 try{
+if(window.AndroidAudio&&typeof window.AndroidAudio.sentencePlay==="function"){
+try{if(window.AndroidAudio.sentencePlay(cleanS))return}catch(e){}
+}
 const a=new Audio(ttsUrl(cleanS));
 currentAudio=a;
 let started=false;
@@ -1679,8 +1691,45 @@ a.onplaying=markOk;a.oncanplaythrough=markOk;a.onended=markOk;
 a.onerror=function(){if(currentAudio===a&&!started){started=true;if(currentAudioTimer)clearTimeout(currentAudioTimer);showToast("例句朗读需联网")}};
 const p=a.play();
 if(p&&p.then)p.then(markOk).catch(function(){if(currentAudio===a&&!started){started=true;if(currentAudioTimer)clearTimeout(currentAudioTimer);showToast("例句朗读需联网")}});
+try{if(window.AndroidAudio&&window.AndroidAudio.cacheSentence)window.AndroidAudio.cacheSentence(cleanS)}catch(e){}
 }catch(e){showToast("例句朗读需联网")}
 }
+const SENT_PACK_URL="https://github.com/wcx1208/cet6-words/releases/download/v3.4/sentence-voice-pack.zip";
+const SENT_TOTAL=6090;
+function packIsNative(){return !!(window.AndroidAudio&&window.AndroidAudio.downloadPack)}
+function packStateNow(){try{return JSON.parse(window.AndroidAudio.packStatus())}catch(e){return null}}
+function downloadSentPack(){
+if(!packIsNative())return;
+const st=packStateNow();
+if(st&&st.state==="downloading"){showToast("正在下载中…");return}
+window.AndroidAudio.downloadPack(SENT_PACK_URL);
+showToast("开始下载例句发音包，请在 Wi-Fi 下进行");
+packPollStart();
+}
+function packPollStart(){
+if(window.__packTimer)clearInterval(window.__packTimer);
+window.__packTimer=setInterval(function(){
+const bar=document.getElementById("pack-bar");
+if(!bar){clearInterval(window.__packTimer);window.__packTimer=null;return}
+const st=packStateNow();if(!st)return;
+if(st.state==="downloading"){
+bar.style.width=(st.percent<0?8:st.percent)+"%";
+const t=document.getElementById("pack-txt");
+if(t)t.textContent=(st.percent<0?"下载中…":st.percent+"% · 已解压 "+st.unzip+" 句");
+}else{
+clearInterval(window.__packTimer);window.__packTimer=null;
+if(st.state==="done"){bar.style.width="100%";showToast("✅ 例句发音包已就绪，全部可离线播放");render()}
+else if(st.state==="error"){const t=document.getElementById("pack-txt");if(t)t.textContent="下载失败："+st.error;showToast("下载失败，请检查网络后重试")}
+}
+},700);
+}
+document.addEventListener("packstate",function(){
+const bar=document.getElementById("pack-bar");if(!bar)return;
+const st=packStateNow();if(!st)return;
+bar.style.width=(st.percent<0?8:st.percent)+"%";
+const t=document.getElementById("pack-txt");
+if(t&&st.state==="downloading")t.textContent=(st.percent<0?"下载中…":st.percent+"% · 已解压 "+st.unzip+" 句");
+});
 function playTts(t){
 stopAudio();
 const cleanT=sanitizeAudioText(t);
