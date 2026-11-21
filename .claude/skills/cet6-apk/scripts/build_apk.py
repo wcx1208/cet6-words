@@ -1,13 +1,21 @@
 # -*- coding: utf-8 -*-
-"""cet6-apk 一键构建交付：同步源码 -> gradle 构建 -> 拷贝 APK 到桌面"""
+"""cet6-apk 一键构建交付：同步网页 -> 同步源码 -> gradle 构建 -> 拷贝 APK 到桌面"""
 import io, os, shutil, subprocess, sys, re
 
 SRC = r"C:\Users\wcx\Desktop\cet6-words\mywords-app\app"
+DOCS = r"C:\Users\wcx\Desktop\cet6-words\mywords-app\docs"
 ROOT = r"C:\Users\wcx\android-build\MyWords"
 DST = r"C:\Users\wcx\Desktop\cet6-words\我的六级单词.apk"
 JDK = r"C:\Users\wcx\android-build\jdk-17.0.20.1+1"
 
 def main():
+    # 0) 网页同步：docs/ 是唯一改动源，先刷进 assets/web 再打包（命令行构建路径的同步保障；
+    #    Android Studio 构建由 app/build.gradle.kts 的 syncWebDocs 任务负责）
+    for fn in ("index.html", "data.js"):
+        shutil.copyfile(os.path.join(DOCS, fn),
+                        os.path.join(SRC, "src", "main", "assets", "web", fn))
+    print("[0/4] web synced (docs -> assets/web)")
+
     # 1) 同步（整目录覆盖，桌面源码为准）
     dst_app = os.path.join(ROOT, "app")
     if os.path.exists(dst_app): shutil.rmtree(dst_app)
@@ -37,12 +45,12 @@ def main():
     else:
         print("[3/4] no APK"); sys.exit(1)
 
-    # 4) 校验
+    # 4) 校验（WebView 单页架构：校验 assets/web 与内置音频）
     import zipfile
     z = zipfile.ZipFile(DST)
     names = z.namelist()
-    checks = {"words.json": "assets/words.json" in names,
-              "quotes.json": "assets/quotes.json" in names,
+    checks = {"index.html": "assets/web/index.html" in names,
+              "data.js": "assets/web/data.js" in names,
               "audio>=6000": sum(1 for n in names if n.startswith("assets/audio/")) >= 6000}
     print("[4/4] verify:", checks)
     if not all(checks.values()): sys.exit(1)

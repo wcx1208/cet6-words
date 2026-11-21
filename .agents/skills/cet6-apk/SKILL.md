@@ -10,15 +10,15 @@ description: 构建、更新、交付「我的六级单词」安卓 App（我的
 ## 快速构建
 
 ```bash
-python "C:\Users\wcx\Desktop\cet6-words\mywords-app\scripts\build_apk.py"
+python "E:\skills\library\cet6-apk\scripts\build_apk.py"
 ```
 
-脚本依次完成：同步 `mywords-app/app` → 构建副本 → gradle assembleDebug → 校验 → 拷贝 APK 到 `Desktop\cet6-words\我的六级单词.apk`。成功标准：输出 `BUILD SUCCESSFUL` 且 0 个 `e:` 行。
+脚本依次完成：同步网页（docs → assets/web）→ 同步 `mywords-app/app` → 构建副本 → gradle assembleDebug → 校验 → 拷贝 APK 到 `Desktop\cet6-words\我的六级单词.apk`。成功标准：输出 `BUILD SUCCESSFUL` 且 0 个 `e:` 行、校验三项全 True。
 
-## 改词库 / 改代码后
+## 改词库 / 改界面 / 改代码后
 
-1. 改 `mywords-app/app/src/main/java/com/wcx/mywords/*.kt` 或 `assets/words.json`；
-2. 跑上面的构建脚本即可（它会把桌面源码同步过去）。
+1. 网页（词库、界面）只改 `mywords-app/docs/index.html` 与 `docs/data.js`；Kotlin 改 `app/src/main/java/com/wcx/mywords/*.kt`；
+2. 跑上面的构建脚本即可——第 0 步自动把 docs/ 同步进 assets/web，Android Studio 构建则由 app/build.gradle.kts 的 syncWebDocs 任务负责。
 
 ## 环境与已知坑（排障时读）
 

@@ -8,11 +8,11 @@
 
 ## 📲 下载安装（安卓）
 
-[**下载最新版 v3.0**](https://github.com/wcx1208/cet6-words/releases/latest) · Android 8.0+ · 约 83 MB
+[**下载最新版 v3.6.3**](https://github.com/wcx1208/cet6-words/releases/latest) · Android 8.0+ · 约 83 MB
 
 | 版本 | 界面 | 说明 |
 |---|---|---|
-| **v3.1**（推荐） | 与网页版完全同一套 | 新增壁纸与透明度、例句全翻译、句子朗读修复 |
+| **v3.6.3**（推荐） | 与网页版完全同一套 | 稳定性修复（下载竞态/计数/资源泄漏）、滑杆与词表性能优化、docs→assets 构建期自动同步 |
 | [v3.0](https://github.com/wcx1208/cet6-words/releases/tag/v3.0) | 与网页版完全同一套 | 首个同源版本，保留可回退 |
 | [v2.9](https://github.com/wcx1208/cet6-words/releases/tag/v2.9) | Compose 原生界面 | 老版本，保留可回退 |
 
@@ -24,7 +24,7 @@
 - **句子朗读**：整句改走在线 TTS；不再调用系统语音引擎，彻底避免点例句闪退
 - **例句翻译**：6090 词例句全部配中文
 
-**完全离线**：6194 词、6078 条真人美音、界面资源全部内置，飞行模式下照常使用。
+**完全离线**：6081 词、6090 条真人美音、界面资源全部内置，飞行模式下照常使用。
 
 ## 🌐 网页版
 
@@ -32,15 +32,15 @@
 
 源码在 `docs/` 目录（GitHub Pages）。手机浏览器可"添加到主屏幕"当 App 用，进度存浏览器本地。
 
-安卓版的界面就是这份 `docs/index.html` 的原样内嵌（见 `app/src/main/assets/web/`），所以两端永远一致：改网页版 = 改安卓版界面。
+安卓版的界面就是这份 `docs/index.html` 的原样内嵌（见 `app/src/main/assets/web/`）：`docs/` 是唯一改动源，Gradle 构建期自动同步进 assets（`syncWebDocs` 任务），命令行构建脚本也会先同步再打包，两端永远一致。
 
 ## ✨ 功能
 
 ### 词库
 
-- **6194 词**：手册精选 649 + 不背单词 CET6 词书 3560 + ECDICT 考纲查漏 1990
+- **6081 词**：手册精选 + 不背单词 CET6 词书 + ECDICT 考纲查漏（多源去重合并）
 - **例句 100% 覆盖**：真题例句优先，其余来自 Tatoeba 开放语料；例句均配中文翻译
-- **4 级难度**：基础 2208 / 核心 2252 / 拓展 1569 / 进阶 61（BNC 词频 + 四六级考纲标签客观定档）
+- **4 级难度**：基础 2208 / 核心 2228 / 拓展 1557 / 进阶 88（BNC 词频 + 四六级考纲标签客观定档）
 - 每条含：音标 · 释义 · 例句 · 易混词辨析（形近/近义）· 词根记忆法 · 搭配 · 同义替换
 
 ### 学习
@@ -52,7 +52,7 @@
 
 ### 发音
 
-四级兜底策略：**内置真人美音（6078 条）→ 本地缓存 → 有道在线 → 系统 TTS**
+四级兜底策略：**内置真人美音（6090 条）→ 本地缓存 → 有道在线 → 系统 TTS**
 
 安卓版通过 JS Bridge 直接播放 APK 内的 mp3，网页版在无内置音频时才走在线接口。
 
@@ -69,9 +69,9 @@ app/src/main/java/com/wcx/mywords/
 └── MainActivity.kt    WebView 外壳：加载 assets/web、发音桥接、进度迁移
 
 app/src/main/assets/
-├── web/index.html     与 docs/index.html 同一份界面
-├── web/data.js        6194 词条数据
-└── audio/us/          6078 条真人美音 mp3
+├── web/index.html     与 docs/index.html 同一份界面（构建期自动同步）
+├── web/data.js        6081 词条数据
+└── audio/us/          6090 条真人美音 mp3
 
 docs/                  网页版（GitHub Pages）
 legacy-compose/        v2.9 及更早的原生 Compose 界面源码（不参与编译）
