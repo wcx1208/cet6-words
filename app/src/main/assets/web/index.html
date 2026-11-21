@@ -215,6 +215,7 @@ html.dark .btn.danger{background:linear-gradient(135deg,rgba(249,85,109,.88),rgb
 .detail-block .tag-lbl.col-tag{background:var(--accent-soft);color:var(--accent)}
 .detail-block .tag-lbl.ex-tag{background:var(--ok-soft);color:var(--ok)}
 .cf-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.cf-btn.on{border-color:var(--brand);color:var(--brand);background:var(--brand-soft)}
 .cf-btn{min-height:36px;padding:4px 11px;border-radius:10px;border:1px solid var(--line-strong);background:var(--card);box-shadow:var(--specular);font-size:var(--fs-xs);font-weight:600;color:var(--ink-2);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:4px;transition:all var(--dur) var(--ease)}
 .cf-btn:hover{border-color:var(--brand);color:var(--brand)}
 .tap-reveal-btn{margin-top:auto;margin-bottom:var(--sp-2);min-height:52px;width:100%;max-width:360px;border-radius:var(--r-pill);border:1.5px dashed var(--brand);background:var(--brand-soft);color:var(--brand);font-size:var(--fs-base);font-weight:700;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:var(--sp-2);box-shadow:var(--specular);transition:transform 140ms var(--ease)}
@@ -484,15 +485,13 @@ return `${yr}-${String(month).padStart(2,"0")}-${String(day).padStart(2,"0")}`;
 }
 function defaultExamDate(){
 return "2027-06-13";
-const now=new Date(),y=now.getFullYear(),m=now.getMonth()+1,d=now.getDate();
-if(m<6||(m===6&&d<=15))return `${y}-06-15`;
-if(m<12||(m===12&&d<=15))return `${y}-12-15`;
 return `${y+1}-06-15`;
 }
 
 var S=safeLoad("srs",{}),H=safeLoad("hist",{}),CFG=Object.assign({daily:20,examDate:defaultExamDate(),auto:false,cloze:true,scenic:true,incBook:true,quizAuto:true,theme:localStorage.getItem("theme")||"auto",wall:"none",wallA:.6,uiA:.66,wallImg:""},safeLoad("cfg",{}));
 if(CFG.uiA===1&&!CFG._v2ui){CFG.uiA=.66;CFG._v2ui=1}
 CFG.daily=Math.min(500,Math.max(1,parseInt(CFG.daily,10)||20));
+if(CFG.examDate==="2026-12-15")CFG.examDate="2027-06-13";
 if(!CFG.examDate||!/^\d{4}-\d{2}-\d{2}$/.test(CFG.examDate))CFG.examDate=defaultExamDate();
 var tier=localStorage.getItem("tier")||"C";if(!TIERS.some(x=>x[0]===tier))tier="C";
 var mode=localStorage.getItem("mode")||"smart";if(!["smart","card","quiz","type","dict"].includes(mode))mode="smart";
@@ -501,6 +500,7 @@ var page="home";
 // 清理旧版可能因仅点收藏而残留的r=0空壳记录
 function sanitizeState(){
 CFG.daily=Math.min(500,Math.max(1,parseInt(CFG.daily,10)||20));
+if(CFG.examDate==="2026-12-15")CFG.examDate="2027-06-13";
 if(!CFG.examDate||!/^\d{4}-\d{2}-\d{2}$/.test(CFG.examDate))CFG.examDate=defaultExamDate();
 for(const k in S){
 const st=S[k];
@@ -748,6 +748,10 @@ if(page==="set")render();
 function saveHistOnly(){
 window.H=H;
 try{localStorage.setItem("hist",JSON.stringify(H));return true}catch(e){return false}
+}
+function saveSrsOnly(){
+window.S=S;
+try{localStorage.setItem("srs",JSON.stringify(S));return true}catch(e){return false}
 }
 function save(){
 window.S=S;window.H=H;window.CFG=CFG;
@@ -1229,11 +1233,16 @@ curve+=(i?"L":"M")+(16+i*(568/60)).toFixed(1)+","+(16+(1-r)*104).toFixed(1);
 const dotX=(16+Math.min(avgS,30)*(568/30)).toFixed(1),dotY=(16+(1-0.9)*104).toFixed(1);
 const topWrong=WORDS.filter(x=>isLearned(x.w)&&(S[x.w].wCnt>0||S[x.w].g===0||(S[x.w].d||5)>6.5)).sort((a,b)=>((S[b.w].wCnt||1)*3+(S[b.w].d||5))-((S[a.w].wCnt||1)*3+(S[a.w].d||5))).slice(0,10);
 
-// 六级550分词汇战力诊断（基于345分基线 + 核心/基础/拓展掌握度加权）
+// 六级600分词汇战力诊断（基于345分基线 + 四档词库掌握度加权，封顶600）
 const cPool=pool("C"),bPool=pool("B");
 const cStarted=cPool.filter(x=>isLearned(x.w)).length,cMast=cPool.filter(x=>mastered(x.w)).length;
 const bStarted=bPool.filter(x=>isLearned(x.w)).length,bMast=bPool.filter(x=>mastered(x.w)).length;
-const estScore=Math.min(585,Math.round(345+(cStarted*0.045)+(cMast*0.035)+(bStarted*0.025)+(bMast*0.02)));
+const tPool=pool("T"),jPool=pool("J");
+const tStarted=tPool.filter(x=>S[x.w]).length,tMast=tPool.filter(x=>mastered(x.w)).length;
+const jStarted=jPool.filter(x=>S[x.w]).length,jMast=jPool.filter(x=>mastered(x.w)).length;
+const wCap=cPool.length+bPool.length+tPool.length*0.7+jPool.length*0.4;
+const wPts=(cStarted*0.5+cMast*0.5)+(bStarted*0.5+bMast*0.5)+((tStarted*0.5+tMast*0.5)*0.7)+((jStarted*0.5+jMast*0.5)*0.4);
+const estScore=Math.min(TARGET_SCORE,Math.round(345+255*Math.min(1,wPts/wCap)));
 const scoreGap=Math.max(0,TARGET_SCORE-estScore);
 
 // 近12周（84天）学习足迹热力图
@@ -1259,8 +1268,8 @@ m.innerHTML=`<div class="home-layout"><div class="col">
 ${renderStat4(todayN,totalLearned,todayMin,actDays)}
 </section>
 <section class="box">
-<h2 class="sec-title"><span>2027 · 6 月备考阶段规划</span><button type="button" class="pill-action" onclick="go('trans')">翻译特训</button></h2>
-<div class="xs" style="margin-bottom:10px">目标 600 分：按词汇战力分三阶段推进，右上角进入翻译特训</div>`+
+<h2 class="sec-title"><span>2027 · 6 月备考阶段规划</span><span class="row" style="gap:6px"><button type="button" class="pill-action" onclick="go('trans')">翻译特训</button><button type="button" class="pill-action" onclick="go('write')">写作句型库</button></span></h2>
+<div class="xs" style="margin-bottom:10px">目标 600 分：按词汇战力分三阶段推进；右上角进入翻译特训与写作句型库</div>`+
 PHASE_PLAN.map(([ph,detail],i)=>`<div class="detail-block" style="margin-top:8px"><span class="tag-lbl">${["①","②","③"][i]} ${escH(ph)}</span>${escH(detail)}</div>`).join("")+
 `</section>
 
@@ -1316,7 +1325,11 @@ if(!drillOrder.length){drillOrder=TRANSLATION_DRILLS.map((_,i)=>i).sort(()=>Math
 const cur=TRANSLATION_DRILLS[drillOrder[drillIdx%drillOrder.length]];
 m.innerHTML=`<div class="home-layout"><div class="col">
 <section class="box">
-<div class="rsb" style="margin-bottom:10px"><button type="button" class="btn subtle sm" style="min-height:36px;padding:0 12px" onclick="go('stat')">返回诊断</button><span class="xs">第 ${(drillIdx%drillOrder.length)+1} / ${drillOrder.length} 句 · ${escH(cur.tag)}</span><button type="button" class="icon-btn" onclick="drillNext()" aria-label="换一句">${ic("repeat",16)}</button></div>
+<div class="rsb" style="margin-bottom:10px"><button type="button" class="btn subtle sm" style="min-height:36px;padding:0 12px" onclick="go('stat')">返回诊断</button><button type="button" class="btn subtle sm" style="min-height:36px;padding:0 12px" onclick="go('write')">写作句型库</button><button type="button" class="icon-btn" onclick="drillNext()" aria-label="换一句">${ic("repeat",16)}</button></div>
+<div class="row" style="gap:6px;flex-wrap:wrap;margin-bottom:8px">
+${["全部","中国文化","科技与发展","教育与人才","经济与生活","社会与民生","历史与名胜"].map(t=>`<button type="button" class="cf-btn ${drillTag===t?'on':''}" style="font-size:11px;min-height:32px;padding:2px 10px" onclick="drillSetTag('${t}')">${t}</button>`).join("")}
+</div>
+<div class="xs" style="margin-bottom:8px">第 ${(drillIdx%drillOrder.length)+1} / ${drillOrder.length} 句 · 话题：${escH(cur.tag)}</div>
 <div class="detail-block" style="background:var(--brand-soft);border-color:var(--line-strong);font-size:var(--fs-lg);line-height:1.8;color:var(--ink)">${escH(cur.zh)}</div>
 <div class="xs" style="margin:10px 0">先把句子在心里译成英文，重点用到本学期积累的六级表达，再对照参考译文。</div>
 ${drillShown?`<div class="detail-block" style="border-color:var(--ok);background:var(--ok-soft)"><span class="tag-lbl ex-tag">参考译文 ${ic("volume",12)}</span><div style="font-family:var(--serif);margin-top:6px">${escH(cur.en)}</div><button type="button" class="audio-pill" style="margin-top:8px" onclick="playSentence('${esc(cur.en)}')">${ic("volume",13)} 朗读英文</button></div>
@@ -1328,12 +1341,12 @@ ${drillShown?`<div class="detail-block" style="border-color:var(--ok);background
 </section>
 <section class="box">
 <h2 class="sec-title">本组统计</h2>
-<div class="mission-grid" style="margin-top:0">
-<div class="glass-stat"><span class="lbl">基本正确</span><span class="val" style="color:var(--ok)">${drillStats.ok}</span></div>
-<div class="glass-stat"><span class="lbl">部分出错</span><span class="val" style="color:var(--warn)">${drillStats.fuzzy}</span></div>
-<div class="glass-stat"><span class="lbl">没译出来</span><span class="val" style="color:var(--bad)">${drillStats.bad}</span></div>
+<div class="row" style="gap:8px">
+<div class="detail-block f1 tc"><div class="xs">基本正确</div><div style="font-size:var(--fs-h1);font-weight:800;color:var(--ok)">${drillStats.ok}</div></div>
+<div class="detail-block f1 tc"><div class="xs">部分出错</div><div style="font-size:var(--fs-h1);font-weight:800;color:var(--warn-btn)">${drillStats.fuzzy}</div></div>
+<div class="detail-block f1 tc"><div class="xs">没译出来</div><div style="font-size:var(--fs-h1);font-weight:800;color:var(--bad)">${drillStats.bad}</div></div>
 </div>
-<div class="xs">建议节奏：每天 5 句，考前一个月每日 10 句；译完大声朗读参考译文，积累表达。</div>
+<div class="xs" style="margin-top:10px">建议节奏：每天 5 句，考前一个月每日 10 句；译完大声朗读参考译文，积累表达。</div>
 </section>
 </div></div>`;
 }else if(page==="write"){
@@ -1379,10 +1392,10 @@ WALLS.filter(x=>x[0]!=="custom").map(([wid,wn,wbg])=>`<button type="button" clas
 <section class="box set-group">
 <h2 class="sec-title">离线例句发音</h2>
 <div class="set-row">
-<div><div class="set-lbl">例句语音包（${SENT_TOTAL} 句）</div><div class="set-desc" id="pack-txt">${packIsNative()?(function(){const st=packStateNow();if(st&&st.state==="downloading")return "下载中…";const c=window.AndroidAudio.packCount();return c>0?("已离线缓存 "+c+" / "+SENT_TOTAL+" 句 · 整包约 50MB"):"下载整包后，全部例句发音可离线播放"}):(function(){const st=packStateNow();return "网页版支持在线朗读；整包离线下载仅安卓版提供"})()}</div></div>
+<div><div class="set-lbl">例句语音包（${SENT_TOTAL} 句）</div><div class="set-desc" id="pack-txt">${packIsNative()?(function(){const st=packStateNow();if(st&&st.state==="downloading")return "下载中…";const c=window.AndroidAudio.packCount();return c>0?("已离线缓存 "+c+" / "+SENT_TOTAL+" 句 · 整包约 68MB"):"下载整包后，全部例句发音可离线播放"})():(function(){const st=packStateNow();return "网页版支持在线朗读；整包离线下载仅安卓版提供"})()}</div></div>
 <button type="button" class="btn subtle sm" style="min-height:40px;padding:0 12px" onclick="downloadSentPack()">下载整包</button>
 </div>
-<div class="pbar brand" style="margin-top:8px"><i id="pack-bar" style="width:0%"></i></div>
+<div class="pbar brand" style="margin-top:8px"><i id="pack-bar" style="width:${(packStateNow()&&packStateNow().percent>0)?packStateNow().percent:0}%"></i></div>
 </section>
 
 <section class="box set-group">
@@ -1569,6 +1582,8 @@ function drillReveal(){drillShown=true;render()}
 function drillNext(){drillIdx++;drillShown=false;render()}
 function drillGrade(g){
 if(g===2)drillStats.ok++;else if(g===1)drillStats.fuzzy++;else drillStats.bad++;
+saveDrillStats();bump(1);
+if(drillIdx+1>=drillOrder.length){showToast(`本轮 ${drillOrder.length} 句完成 ✓ 正确 ${drillStats.ok} · 出错 ${drillStats.fuzzy+drillStats.bad}，换个话题继续！`)}
 drillNext();
 }
 function go(p){
@@ -1733,7 +1748,7 @@ if(!s)return;
 if(s.length>48||(/\s/.test(s)&&!WORD_MAP.has(s.toLowerCase()))){playLongSentence(s);return}
 play(s);
 }
-function ttsUrl(t){return "https://fanyi.baidu.com/gettts?lan=en&text="+encodeURIComponent(t)+"&spd=3&source=web"}
+function ttsUrl(t,spd){spd=spd||3;return "https://fanyi.baidu.com/gettts?lan=en&text="+encodeURIComponent(t)+"&spd="+spd+"&source=web&per=0"}
 function playLongSentence(s){
 stopAudio();
 const cleanS=String(s||"").replace(/[\u00a0\u2000-\u200b\u3000]/g," ").trim();
@@ -1742,7 +1757,7 @@ try{
 if(window.AndroidAudio&&typeof window.AndroidAudio.sentencePlay==="function"){
 try{if(window.AndroidAudio.sentencePlay(cleanS))return}catch(e){}
 }
-const a=new Audio(ttsUrl(cleanS));
+const a=new Audio(ttsUrl(cleanS,4));
 currentAudio=a;
 let started=false;
 currentAudioTimer=setTimeout(function(){if(currentAudio===a&&!started){started=true;showToast("例句朗读需联网")}},4500);
@@ -1757,9 +1772,12 @@ try{if(window.AndroidAudio&&window.AndroidAudio.cacheSentence)window.AndroidAudi
 const TRANSLATION_DRILLS=[{"zh": "春节是中国最重要的传统节日，家人通常会在这一天团聚，共进丰盛的年夜饭。", "en": "The Spring Festival is the most important traditional festival in China, when family members usually get together and enjoy a sumptuous reunion dinner.", "tag": "中国文化"}, {"zh": "书法在中国有着悠久的历史，它不仅是书写文字的方式，更是一门承载着审美与修养的艺术。", "en": "Calligraphy has a long history in China. It is not merely a way of writing characters, but an art that carries aesthetics and personal cultivation.", "tag": "中国文化"}, {"zh": "茶文化在中国源远流长，中国人相信饮茶有益健康，能够使人内心平静、思路清晰。", "en": "Tea culture has a long history in China. Chinese people believe that drinking tea is beneficial to health, as it can bring inner peace and clear thinking.", "tag": "中国文化"}, {"zh": "长城是世界上最伟大的建筑工程之一，它凝聚了古代劳动人民的智慧与汗水。", "en": "The Great Wall is one of the greatest construction projects in the world, embodying the wisdom and diligence of the working people in ancient times.", "tag": "中国文化"}, {"zh": "苏州园林以其精巧的设计闻名于世，体现了人与自然和谐共处的理念。", "en": "Suzhou gardens are world-famous for their exquisite designs, reflecting the ideal of harmony between man and nature.", "tag": "中国文化"}, {"zh": "高铁网络的迅速发展极大地方便了人们的出行，促进了沿线城市的经济发展。", "en": "The rapid development of the high-speed railway network has greatly facilitated travel and boosted the economic growth of cities along the lines.", "tag": "科技与发展"}, {"zh": "移动支付在中国已经十分普及，人们出门几乎不需要携带现金。", "en": "Mobile payment has become so widespread in China that people hardly need to carry cash when going out.", "tag": "科技与发展"}, {"zh": "人工智能正在改变我们的生活方式，但同时也带来了就业结构方面的挑战。", "en": "Artificial intelligence is changing the way we live, while at the same time posing challenges to the employment structure.", "tag": "科技与发展"}, {"zh": "近年来，中国在航天领域取得了举世瞩目的成就，包括载人航天和月球探测。", "en": "In recent years, China has made remarkable achievements in aerospace, including manned spaceflight and lunar exploration.", "tag": "科技与发展"}, {"zh": "中国的5G技术处于世界领先地位，为智慧城市的建设奠定了坚实基础。", "en": "China's 5G technology is in a leading position in the world, laying a solid foundation for the construction of smart cities.", "tag": "科技与发展"}, {"zh": "中国政府高度重视教育，不断加大对教育的投入，努力促进教育公平。", "en": "The Chinese government attaches great importance to education, continuously increasing investment in it and striving to promote educational equality.", "tag": "教育与人才"}, {"zh": "随着互联网的普及，在线教育使越来越多的人能够随时随地学习新知识。", "en": "With the popularity of the Internet, online education enables more and more people to acquire new knowledge anytime and anywhere.", "tag": "教育与人才"}, {"zh": "越来越多的中国学生选择出国留学，以开阔视野、增长见识。", "en": "An increasing number of Chinese students choose to study abroad so as to broaden their horizons and enrich their experience.", "tag": "教育与人才"}, {"zh": "职业教育与普通教育同等重要，社会需要各类高素质的技能型人才。", "en": "Vocational education is as important as general education, for society needs skilled talents of various kinds with high quality.", "tag": "教育与人才"}, {"zh": "终身学习的理念正在深入人心，学习不再局限于校园之内。", "en": "The concept of lifelong learning is gaining popularity, as learning is no longer confined to the campus.", "tag": "教育与人才"}, {"zh": "改革开放以来，中国经济持续快速发展，人民生活水平显著提高。", "en": "Since the reform and opening-up, China's economy has maintained rapid growth, and people's living standards have improved remarkably.", "tag": "经济与生活"}, {"zh": "电子商务的兴起改变了传统的消费方式，网上购物已成为日常生活的一部分。", "en": "The rise of e-commerce has transformed the traditional way of consumption, and online shopping has become part of daily life.", "tag": "经济与生活"}, {"zh": "中国积极推动可持续发展，大力投资清洁能源以应对气候变化。", "en": "China actively promotes sustainable development and invests heavily in clean energy to cope with climate change.", "tag": "经济与生活"}, {"zh": "城镇化进程的加快为农村人口提供了更多的就业机会，同时也带来了新的社会问题。", "en": "The acceleration of urbanization has provided rural people with more job opportunities, while bringing about new social problems as well.", "tag": "经济与生活"}, {"zh": "中欧之间的贸易往来日益密切，双方在多个领域展开了深入合作。", "en": "Trade between China and Europe is becoming increasingly close, with both sides carrying out in-depth cooperation in various fields.", "tag": "经济与生活"}, {"zh": "随着人口老龄化问题的加剧，中国社会正努力完善养老服务体系。", "en": "As the problem of population aging intensifies, Chinese society is making great efforts to improve the elderly care service system.", "tag": "社会与民生"}, {"zh": "越来越多的年轻人加入志愿者队伍，为社区建设贡献自己的力量。", "en": "More and more young people have joined the volunteer team, contributing their own strength to community building.", "tag": "社会与民生"}, {"zh": "公众的环保意识不断增强，垃圾分类在许多城市已经蔚然成风。", "en": "Public awareness of environmental protection has been growing, and garbage sorting has become common practice in many cities.", "tag": "社会与民生"}, {"zh": "健康意识的提高使人们更加注重均衡饮食和定期锻炼。", "en": "The rising awareness of health has made people pay more attention to a balanced diet and regular exercise.", "tag": "社会与民生"}, {"zh": "政府对食品安全实行严格监管，以保障人民群众的身体健康。", "en": "The government exercises strict supervision over food safety so as to safeguard the health of the people.", "tag": "社会与民生"}, {"zh": "兵马俑被誉为世界第八大奇迹，每年吸引着成千上万的游客前来参观。", "en": "The Terracotta Warriors are known as the eighth wonder of the world, attracting thousands upon thousands of visitors every year.", "tag": "历史与名胜"}, {"zh": "西湖以其秀丽的湖光山色和众多的历史传说而闻名天下。", "en": "The West Lake is famous throughout the world for its beautiful scenery of hills and waters as well as its numerous historical legends.", "tag": "历史与名胜"}, {"zh": "丝绸之路是古代连接中国与欧洲的重要贸易通道，促进了东西方文明的交流。", "en": "The Silk Road was a vital trade route linking China and Europe in ancient times, which promoted the exchange between Eastern and Western civilizations.", "tag": "历史与名胜"}, {"zh": "故宫是世界上现存规模最大、保存最完整的古代宫殿建筑群。", "en": "The Palace Museum, known as the Forbidden City, is the largest and best-preserved ancient palace complex in the world.", "tag": "历史与名胜"}, {"zh": "黄河被誉为中华民族的母亲河，孕育了灿烂的中华文明。", "en": "The Yellow River, hailed as the mother river of the Chinese nation, gave birth to the splendid Chinese civilization.", "tag": "历史与名胜"}];
 const WRITING_BANK=[["图表 / 图画描述", [["As is vividly depicted in the chart, ... has witnessed a dramatic change over the past decade.", "图表作文万能开头：如图所示，……在过去十年经历了显著变化。"], ["The bar chart illustrates the percentage of ... in 2020 compared with that in 2015.", "柱状图对比句式：柱状图展示了……与……的百分比对比。"], ["What is conveyed in the picture is that ...", "图画作文开头：图画所传达的信息是……"], ["The number of ... increased / decreased sharply, rising / dropping from ... to ...", "数据变化句式：数量急剧上升/下降，从……升至/降至……"], ["In contrast, the figure for ... remained relatively stable during the same period.", "对比句：相比之下，同期……的数据相对稳定。"]]], ["引出现象 / 话题", [["In recent years, ... has become a heated topic among the general public.", "引出热议话题：近年来，……成为公众热议的话题。"], ["Nowadays, there is a growing tendency for ... to ...", "现象描述：如今，……的趋势日益明显。"], ["With the rapid development of ..., an increasing number of people have begun to ...", "背景引入：随着……的迅速发展，越来越多的人开始……"], ["It is universally acknowledged that ... plays an increasingly important role in ...", "公认观点：众所周知，……在……中扮演着日益重要的角色。"], ["Recently, the issue of ... has aroused wide public concern.", "引出争议话题：最近，……的问题引起了广泛的公众关注。"]]], ["观点与论证", [["From my perspective, the advantages of ... far outweigh its disadvantages.", "表明立场：在我看来，……利远大于弊。"], ["There are two fundamental factors contributing to this phenomenon.", "原因分析框架：有两个基本因素促成了这一现象。"], ["First and foremost, ... Moreover, ... Last but not least, ...", "三条理由连接词组：首先/其次/最后。"], ["A case in point is that ..., which clearly demonstrates ...", "举例论证：一个典型的例子是……，这清楚地表明……"], ["According to a recent survey conducted by ..., nearly ... percent of respondents ...", "数据论证：根据……的最新调查，近……%的受访者……"], ["It is the responsibility of every individual to ...", "强调责任：……是每个人的责任。（It is ... that/to 强调句）"]]], ["让步 / 转折 / 对比", [["Admittedly, ... However, this does not mean that ...", "让步转折：诚然……，但这并不意味着……"], ["While some people argue that ..., others maintain that ...", "观点对比：尽管有人认为……，另一些人则坚持……"], ["Despite the fact that ..., ... still faces a series of challenges.", "尽管句式：尽管……，……仍然面临一系列挑战。"], ["On the one hand, ... On the other hand, ...", "两方面对照：一方面……另一方面……"], ["By no means does it suggest that we should ...", "倒装强调：这绝不意味着我们应该……（倒装句加分）"]]], ["结论与建议", [["In conclusion, ... It is high time that we placed considerable emphasis on ...", "结论 + 虚拟语气：是时候高度重视……了（high time + 过去式，语法亮点）。"], ["To sum up, ... Only in this way can we ...", "总结 + 倒装：只有这样我们才能……（Only 倒装，加分句式）。"], ["It is advisable for the authorities to introduce relevant regulations to ...", "建议措施：当局宜出台相关规定以……"], ["As college students, we should ... rather than ...", "联系自身：作为大学生，我们应当……而不是……"], ["If every member of society makes a concerted effort, ... will be within reach.", "展望收尾：只要全社会共同努力，……指日可待。"]]]];
 const UPGRADE_WORDS=[["think", "contend / maintain", "I contend that ..."], ["important", "paramount / crucial", "plays a paramount role in ..."], ["more and more", "an increasing number of", "an increasing number of graduates"], ["but / however", "nevertheless / whereas", "He failed; nevertheless, he tried again."], ["because of", "owing to / on account of", "owing to the shortage of funds"], ["get", "acquire / obtain", "acquire practical skills"], ["help", "facilitate / promote", "facilitate cross-cultural communication"], ["show", "demonstrate / reveal", "the chart demonstrates that ..."], ["good", "beneficial / rewarding", "a rewarding experience"], ["bad", "detrimental / adverse", "be detrimental to one's health"], ["famous", "renowned / eminent", "a world-renowned university"], ["improve", "enhance / boost", "enhance national competitiveness"], ["solve", "tackle / address / resolve", "address the root cause"], ["use", "employ / adopt / harness", "harness solar energy"], ["very", "exceedingly / considerably", "exceedingly important"]];
-let drillIdx=-1,drillShown=false,drillStats={ok:0,fuzzy:0,bad:0},drillOrder=[];
+let drillIdx=-1,drillShown=false,drillOrder=[],drillTag="全部";
+try{drillStats=JSON.parse(localStorage.getItem("dstat"))||{ok:0,fuzzy:0,bad:0}}catch(e){drillStats={ok:0,fuzzy:0,bad:0}}
+function saveDrillStats(){try{localStorage.setItem("dstat",JSON.stringify(drillStats))}catch(e){}}
+function drillSetTag(t){drillTag=t;drillOrder=TRANSLATION_DRILLS.map((_,i)=>i).filter(i=>t==="全部"||TRANSLATION_DRILLS[i].tag===t).sort(()=>Math.random()-.5);drillIdx=0;drillShown=false;render()}
 const SENT_PACK_URL="https://github.com/wcx1208/cet6-words/releases/download/v3.4/sentence-voice-pack.zip";
-const SENT_TOTAL=6090;
+const SENT_TOTAL=WORDS.length;
 function packIsNative(){return !!(window.AndroidAudio&&window.AndroidAudio.downloadPack)}
 function packStateNow(){try{return JSON.parse(window.AndroidAudio.packStatus())}catch(e){return null}}
 function downloadSentPack(){
@@ -1787,6 +1805,12 @@ else if(st.state==="error"){const t=document.getElementById("pack-txt");if(t)t.t
 }
 },700);
 }
+setInterval(function(){
+const bar=document.getElementById("pack-bar");if(!bar)return;
+const st=packStateNow();if(!st)return;
+if(st.state==="downloading"){bar.style.width=(st.percent<0?8:st.percent)+"%"}
+else if(st.state==="done"&&st.percent>=100){bar.style.width="100%"}
+},1500);
 document.addEventListener("packstate",function(){
 const bar=document.getElementById("pack-bar");if(!bar)return;
 const st=packStateNow();if(!st)return;
@@ -1799,7 +1823,7 @@ stopAudio();
 const cleanT=sanitizeAudioText(t);
 if(!cleanT)return;
 try{
-const a=new Audio(ttsUrl(cleanT));
+const a=new Audio("https://dict.youdao.com/dictvoice?type=2&audio="+encodeURIComponent(cleanT));
 currentAudio=a;
 a.play().catch(function(){});
 }catch(e){}
@@ -1812,7 +1836,7 @@ clearTimeout(window.__qzTimer);
 if(page!=="study")return;
 const w=Q[qi];if(!w)return;
 historyStack.push({qi,word:w.w,prevS:S[w.w]?Object.assign({},S[w.w]):null,prevCombo:combo,prevMaxCombo:maxCombo,qLen:Q.length,swLen:sessionWrong.length,prevTyped:typed,prevHintLv:hintLv,prevQuizPick:quizPick,prevOpts:w._opts?w._opts.slice():null,prevAns:w._ans,prevRevealed:revealed,prevChecked:checked});
-S[w.w]=next(S[w.w],g);bump(1);doneCnt++;
+S[w.w]=next(S[w.w],g);bump(1);doneCnt++;saveSrsOnly();
 if(g===0){
 combo=0;sessionWrong.push(w);
 w._opts=null; // 重入队尾时清空旧选项顺序，防止位置记忆盲选
@@ -1833,7 +1857,7 @@ if(page!=="study")return;
 const w=Q[qi];if(!w)return;
 historyStack.push({qi,word:w.w,prevS:S[w.w]?Object.assign({},S[w.w]):null,prevCombo:combo,prevMaxCombo:maxCombo,qLen:Q.length,swLen:sessionWrong.length,prevTyped:typed,prevHintLv:hintLv,prevQuizPick:quizPick,prevOpts:w._opts?w._opts.slice():null,prevAns:w._ans,prevRevealed:revealed,prevChecked:checked,wasKilled:true});
 S[w.w]={iv:30,e:2.6,ease:2.6,s:30,d:3.2,lr:Date.now(),due:Date.now()+30*DAY,r:(S[w.w]?.r||0)+1,wCnt:S[w.w]?.wCnt||0,star:!!S[w.w]?.star,g:2};
-bump(1);doneCnt++;combo++;if(combo>maxCombo)maxCombo=combo;
+bump(1);doneCnt++;combo++;if(combo>maxCombo)maxCombo=combo;saveSrsOnly();
 qi++;revealed=false;quizPick=-1;typed="";retryTyped="";checked=false;hintLv=0;dictPeek=false;
 saveSession();showToast(`⚡ 已标熟斩词：${w.w}（30天内不再打扰）`);render();
 if(Q[qi]&&(CFG.auto||resolveCardMode(Q[qi])==="dict"))play(Q[qi].w);
@@ -1846,7 +1870,7 @@ if(ls.prevS)S[ls.word]=ls.prevS;else delete S[ls.word];
 while(Q.length>ls.qLen)Q.pop();
 while(sessionWrong.length>ls.swLen)sessionWrong.pop();
 qi=ls.qi;combo=ls.prevCombo;maxCombo=ls.prevMaxCombo;doneCnt=Math.max(0,doneCnt-1);
-bump(-1);
+bump(-1);saveSrsOnly();
 const w=Q[qi];
 if(w&&ls.prevOpts){w._opts=ls.prevOpts;w._ans=ls.prevAns}
 const curM=resolveCardMode(w);
@@ -1966,7 +1990,7 @@ function openPlanModal(){
 const sp=getSmartPlan(tier);
 const decDate=nextMonthDayDate(12,15),junDate=nextMonthDayDate(6,15);
 R("modal-root",`<div class="modal-mask" role="dialog" aria-modal="true" onclick="closeModal()"><div class="modal-card" style="padding:18px" onclick="event.stopPropagation()">
-<div class="rsb" style="margin-bottom:8px"><h3 style="margin:0;font-size:var(--fs-lg)">六级 550 分备考计划设定</h3><button type="button" class="icon-btn" style="min-width:36px;min-height:36px" onclick="closeModal()" aria-label="关闭">${ic("x",16)}</button></div>
+<div class="rsb" style="margin-bottom:8px"><h3 style="margin:0;font-size:var(--fs-lg)">六级 600 分备考计划设定</h3><button type="button" class="icon-btn" style="min-width:36px;min-height:36px" onclick="closeModal()" aria-label="关闭">${ic("x",16)}</button></div>
 <div class="xs" style="margin-bottom:4px">① 选择主攻词库分组（本组剩余未学 ${sp.freshN} 词）：</div>
 <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px">`+
 TIERS.map(([k,l,desc])=>{const cnt=pool(k).length,rem=pool(k).filter(x=>!isLearned(x.w)).length;return `<button type="button" class="box tc" style="padding:8px;cursor:pointer;border-color:${tier===k?'var(--brand)':'var(--hairline)'};background:${tier===k?'var(--brand-soft)':'var(--card)'}" onclick="setTier('${k}');openPlanModal()"><b>六级${l}</b> <small class="xs">${cnt}词</small><div class="xs">剩余 ${rem} · ${desc}</div></button>`}).join("")+
@@ -1974,8 +1998,8 @@ TIERS.map(([k,l,desc])=>{const cnt=pool(k).length,rem=pool(k).filter(x=>!isLearn
 <div class="xs" style="margin-bottom:4px">② 设定目标考试日期（当前距考试 <b style="color:var(--brand)">${sp.daysLeft}</b> 天）：</div>
 <input id="modal-exam-date" type="date" value="${escH(CFG.examDate)}" style="width:100%;min-height:40px;padding:0 10px;margin-bottom:6px;border-radius:10px;border:1px solid var(--hairline);background:var(--surface);font-weight:600" onchange="setExamDate(this.value,true)" aria-label="目标考试日期">
 <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:10px">
-<button type="button" class="cf-btn tc" style="font-size:11px;min-height:38px;padding:2px 0" onclick="setExamDate('${decDate}',true)">12月六级</button>
-<button type="button" class="cf-btn tc" style="font-size:11px;min-height:38px;padding:2px 0" onclick="setExamDate('${junDate}',true)">6月六级</button>
+<button type="button" class="cf-btn tc" style="font-size:11px;min-height:38px;padding:2px 0" onclick="setExamDate('${decDate}',true)">26年12月</button>
+<button type="button" class="cf-btn tc" style="font-size:11px;min-height:38px;padding:2px 0" onclick="setExamDate('${junDate}',true)">27年6月</button>
 <button type="button" class="cf-btn tc" style="font-size:11px;min-height:38px;padding:2px 0" onclick="quickExamOffset(30)">30天冲刺</button>
 <button type="button" class="cf-btn tc" style="font-size:11px;min-height:38px;padding:2px 0" onclick="quickExamOffset(60)">60天稳过</button>
 </div>
@@ -2026,7 +2050,7 @@ navigator.clipboard.writeText(txt).then(onOk).catch(fb);
 }
 function shareReportCopy(){
 const actD=totalActiveDays(),tn=H[today()]||0,tot=WORDS.filter(x=>isLearned(x.w)).length,mast=WORDS.filter(x=>mastered(x.w)).length;
-const shareTxt=`【我的六级550分备考打卡】🌟 累计点亮 ${actD} 天 | 今日练习 ${tn} 词次 | 累计已学 ${tot} 词（FSRS记牢 ${mast} 词）！`;
+const shareTxt=`【我的六级600分备考打卡】🌟 累计点亮 ${actD} 天 | 今日练习 ${tn} 词次 | 累计已学 ${tot} 词（FSRS记牢 ${mast} 词）！`;
 copyText(shareTxt,()=>{closeModal();showToast("🎉 成绩单已复制，快去分享吧")},()=>{showToast("当前环境不支持自动复制，请截屏分享")});
 }
 function openShareModal(){

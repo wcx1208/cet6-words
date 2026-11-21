@@ -8,7 +8,6 @@ import android.net.Uri
 import android.media.MediaPlayer
 import android.os.Build
 import android.os.Bundle
-import android.speech.tts.TextToSpeech
 import android.view.View
 import android.view.WindowInsetsController
 import android.webkit.JavascriptInterface
@@ -38,7 +37,6 @@ class MainActivity : Activity() {
 
     private lateinit var web: WebView
     private var player: MediaPlayer? = null
-    private var tts: TextToSpeech? = null
 
     /** 小写词 -> 实际音频文件名（去扩展名），兼容 37 个首字母大写的文件 */
     private val audioMap = HashMap<String, String>(8192)
@@ -120,12 +118,6 @@ class MainActivity : Activity() {
                     fileCallback = null
                     false
                 }
-            }
-        }
-
-        tts = TextToSpeech(this) { status ->
-            if (status == TextToSpeech.SUCCESS) {
-                runCatching { tts?.language = Locale.US }
             }
         }
 
@@ -291,6 +283,7 @@ class MainActivity : Activity() {
                 if (tmp.length() > 3500) {
                     if (f.exists()) f.delete()
                     tmp.renameTo(f)
+                    packCountN = (if (packCountN < 0) 0 else packCountN) + 1
                 } else tmp.delete()
             }
         }.start()
@@ -302,8 +295,15 @@ class MainActivity : Activity() {
     @Volatile private var packTotal = -1L
     @Volatile private var packUnzip = 0
     @Volatile private var packError = ""
+    @Volatile private var packCountN = -1   // -1 = 尚未从磁盘初始化
 
-    private fun packCount(): Int = sentDir().listFiles()?.count { it.name.endsWith(".mp3") } ?: 0
+    private fun packCount(): Int {
+        val c = packCountN
+        if (c >= 0) return c
+        val n = sentDir().listFiles()?.count { it.name.endsWith(".mp3") } ?: 0
+        packCountN = n
+        return n
+    }
 
     private fun setPackState(v: String) {
         packState = v
@@ -323,6 +323,12 @@ class MainActivity : Activity() {
                 conn.connectTimeout = 20000; conn.readTimeout = 60000
                 conn.instanceFollowRedirects = true
                 conn.setRequestProperty("User-Agent", "Mozilla/5.0")
+                val code = conn.responseCode
+                if (code !in 200..299) {
+                    packError = "服务器返回 $code，请稍后重试"
+                    setPackState("error")
+                    return@Thread
+                }
                 packTotal = conn.contentLengthLong
                 conn.inputStream.use { inp ->
                     FileOutputStream(tmpZip).use { out ->
@@ -347,9 +353,10 @@ class MainActivity : Activity() {
                     }
                 }
                 tmpZip.delete()
+                packError = if (packUnzip > 0) "" else "包内无音频文件"
                 setPackState(if (packUnzip > 0) "done" else "error")
-                if (packUnzip == 0) packError = "包内无音频文件"
             } catch (e: Exception) {
+                runCatching { File(cacheDir, "sent_pack.zip").delete() }
                 packError = e.message ?: "下载失败"
                 setPackState("error")
             }
@@ -378,16 +385,6 @@ class MainActivity : Activity() {
             p.start()
             player = p
         }
-    }
-
-    /** 主线程：内置音频优先，没有才用系统 TTS */
-    private fun speak(word: String) {
-        val actual = resolveAsset(word)
-        if (actual != null) {
-            startAsset(actual)
-            return
-        }
-        runCatching { tts?.speak(word, TextToSpeech.QUEUE_FLUSH, null, "word") }
     }
 
     /** 状态栏 / 导航栏跟随网页的明暗主题 */
@@ -429,12 +426,6 @@ class MainActivity : Activity() {
         }
 
         @JavascriptInterface
-        fun speak(word: String) {
-            if (word.length > 48) return
-            runOnUiThread { runCatching { speak(word) } }
-        }
-
-        @JavascriptInterface
         fun stop() {
             runOnUiThread {
                 runCatching {
@@ -466,7 +457,7 @@ class MainActivity : Activity() {
 
         /** 已离线缓存的例句数量 */
         @JavascriptInterface
-        fun packCount(): Int = packCount()
+        fun packCount(): Int = this@MainActivity.packCount()
 
         /** 一键下载整包例句发音（zip） */
         @JavascriptInterface
@@ -479,7 +470,7 @@ class MainActivity : Activity() {
         fun packStatus(): String {
             val percent = if (packTotal > 0) (packDone * 100 / packTotal).toInt() else -1
             val err = packError.replace("\"", "'")
-            return "{\"state\":\"$packState\",\"percent\":$percent,\"unzip\":$packUnzip,\"count\":${packCount()},\"error\":\"$err\"}"
+            return "{\"state\":\"$packState\",\"percent\":$percent,\"unzip\":$packUnzip,\"count\":${this@MainActivity.packCount()},\"error\":\"$err\"}"
         }
     }
 
@@ -500,6 +491,7 @@ class MainActivity : Activity() {
                     "var m=document.getElementById('modal-root');" +
                     "if(m&&m.innerHTML.trim()){closeModal();return 'nav';}" +
                     "if(typeof page!=='undefined'&&page==='study'&&typeof finishOrExitStudy==='function'){finishOrExitStudy();return 'nav';}" +
+                    "if(typeof page!=='undefined'&&(page==='trans'||page==='write')){go('stat');return 'nav';}" +
                     "if(typeof page!=='undefined'&&page!=='home'){go('home');return 'nav';}" +
                     "return 'exit';}catch(e){return 'exit';}})()"
         ) { result ->
@@ -520,7 +512,6 @@ class MainActivity : Activity() {
 
     override fun onDestroy() {
         runCatching { player?.release(); player = null }
-        runCatching { tts?.shutdown(); tts = null }
         web.destroy()
         super.onDestroy()
     }
