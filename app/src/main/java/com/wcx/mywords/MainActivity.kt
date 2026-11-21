@@ -272,19 +272,24 @@ class MainActivity : Activity() {
     /** 后台把一句的发音下载到本地缓存（下次离线可播） */
     private fun cacheSentenceAsync(text: String) {
         Thread {
-            runCatching {
+            var tmp: File? = null
+            try {
                 val f = sentFile(text)
                 if (f.exists() && f.length() > 3500) return@Thread
-                val tmp = File(sentDir(), f.name + ".tmp")
+                // 唯一临时名，避免连续点击同一句时双线程写同一 .tmp
+                tmp = File(sentDir(), f.name + "." + System.nanoTime() + ".tmp")
                 val conn = URL(baiduTtsUrl(canonText(text), 4)).openConnection() as HttpURLConnection
                 conn.connectTimeout = 15000; conn.readTimeout = 30000
+                if (conn.responseCode !in 200..299) throw IllegalStateException("HTTP ${conn.responseCode}")
                 conn.setRequestProperty("User-Agent", "Mozilla/5.0")
                 conn.inputStream.use { inp -> FileOutputStream(tmp).use { out -> inp.copyTo(out) } }
                 if (tmp.length() > 3500) {
                     if (f.exists()) f.delete()
-                    tmp.renameTo(f)
-                    packCountN = (if (packCountN < 0) 0 else packCountN) + 1
+                    tmp.renameTo(f); tmp = null
+                    if (packCountN >= 0) packCountN += 1   // 未初始化(-1)时不覆写，等首次磁盘扫描
                 } else tmp.delete()
+            } catch (e: Exception) {
+                runCatching { tmp?.delete() }
             }
         }.start()
     }
@@ -353,6 +358,7 @@ class MainActivity : Activity() {
                     }
                 }
                 tmpZip.delete()
+                if (packUnzip > 0) packCountN = packUnzip   // 刷新内存计数，避免设置页显示 0
                 packError = if (packUnzip > 0) "" else "包内无音频文件"
                 setPackState(if (packUnzip > 0) "done" else "error")
             } catch (e: Exception) {
@@ -465,12 +471,17 @@ class MainActivity : Activity() {
             downloadPackAsync(url)
         }
 
-        /** 下载状态，供 JS 轮询：JSON */
+        /** 下载状态，供 JS 轮询：JSON（JSONObject 保证特殊字符安全转义） */
         @JavascriptInterface
         fun packStatus(): String {
             val percent = if (packTotal > 0) (packDone * 100 / packTotal).toInt() else -1
-            val err = packError.replace("\"", "'")
-            return "{\"state\":\"$packState\",\"percent\":$percent,\"unzip\":$packUnzip,\"count\":${this@MainActivity.packCount()},\"error\":\"$err\"}"
+            return org.json.JSONObject()
+                .put("state", packState)
+                .put("percent", percent)
+                .put("unzip", packUnzip)
+                .put("count", this@MainActivity.packCount())
+                .put("error", packError)
+                .toString()
         }
     }
 
