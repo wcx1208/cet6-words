@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=5,viewport-fit=cover">
 <title>我的六级单词</title>
-<meta name="description" content="六级550分备考背单词应用：6090词真题语境、FSRS-6间隔重复调度、智能递进与四种学习模式、全例句中文翻译。">
+<meta name="description" content="六级600分备考背单词应用：6090词真题语境、FSRS-6间隔重复调度、智能递进与四种学习模式、全例句中文翻译、翻译特训与写作句型库。">
 <meta property="og:title" content="我的六级单词">
-<meta property="og:description" content="六级550分备考背单词应用：6090词真题语境、FSRS-6间隔重复调度、智能递进与四种学习模式、全例句中文翻译。">
+<meta property="og:description" content="六级600分备考背单词应用：6090词真题语境、FSRS-6间隔重复调度、智能递进与四种学习模式、全例句中文翻译、翻译特训与写作句型库。">
 <style>
 :root{
 --bg-rgb:238,242,250;--bg-a:.35;--card-rgb:255,255,255;--card-a:.64;--surf-rgb:244,247,254;--surf-a:.56;
@@ -353,7 +353,7 @@ nav.botnav{position:fixed;bottom:calc(10px + env(safe-area-inset-bottom));left:5
 <h1 class="brand-title">我的六级单词</h1>
 </div>
 <div class="row">
-<button type="button" class="top-meta-pill" id="top-plan-pill" onclick="openPlanModal()" aria-label="查看或调整备考计划">550分计划</button>
+<button type="button" class="top-meta-pill" id="top-plan-pill" onclick="openPlanModal()" aria-label="查看或调整备考计划">600分计划</button>
 <button type="button" class="icon-btn" id="theme-quick" onclick="cycleTheme()" aria-label="切换明暗主题"></button>
 </div>
 </header>
@@ -426,6 +426,12 @@ function ic(name,size=15,cls=""){
 const p=ICON[name]||"";
 return `<svg class="ic${cls?" "+cls:""}" style="width:${size}px;height:${size}px" viewBox="0 0 24 24" aria-hidden="true">${p}</svg>`;
 }
+const TARGET_SCORE=600;
+const PHASE_PLAN=[
+["基础期 · 现在 → 2027 年 2 月","核心词与基础词双线推进，目标累计掌握 2500 词；每天 20-30 词 + 当日复习"],
+["强化期 · 2027 年 3 月 → 4 月","结束首轮词库，转入错词与形近词特训；每周 2 套真题，翻译写作开始动笔"],
+["冲刺期 · 2027 年 5 月 → 考前","高频词快速过 3 轮，真题限时模拟；写作句型默写、翻译话题句每日 5 句"],
+];
 const MODE_META={
 smart:{ic:"sparkle",label:"智能递进",short:"智能",full:"智能递进模式"},
 card:{ic:"card",label:"认词",short:"认词",full:"卡片认词模式"},
@@ -477,6 +483,7 @@ const yr=(m<month||(m===month&&d<=day))?y:(y+1);
 return `${yr}-${String(month).padStart(2,"0")}-${String(day).padStart(2,"0")}`;
 }
 function defaultExamDate(){
+return "2027-06-13";
 const now=new Date(),y=now.getFullYear(),m=now.getMonth()+1,d=now.getDate();
 if(m<6||(m===6&&d<=15))return `${y}-06-15`;
 if(m<12||(m===12&&d<=15))return `${y}-12-15`;
@@ -972,6 +979,7 @@ const topCardBar=`<div class="card-topbar">
 </div></div>`;
 
 const renderStructuredDetails=()=>`
+${w.en?`<div class="detail-block"><span class="tag-lbl">英文释义</span><span style="font-family:var(--serif);font-style:italic">${escH(w.en)}</span></div>`:""}
 ${pNote.cols.length?`<div class="detail-block"><span class="tag-lbl col-tag">考场搭配</span>${pNote.cols.map(escH).join(" ； ")}</div>`:""}
 ${pNote.root?`<div class="detail-block"><span class="tag-lbl">词根助记</span>${escH(pNote.root)}</div>`:""}
 ${w.ex?`<div class="detail-block" onclick="playSentence('${esc(w.ex.replace(/^\.\.\.|\.\.\.$/g,''))}')" style="cursor:pointer" title="点击朗读真题例句"><span class="tag-lbl ex-tag">真题语境 ${ic("volume",12)}</span>${makeCloze(w.ex,w.w,true)}${w.exm?`<div class="sub" style="margin-top:4px">${escH(w.exm)}</div>`:""}</div>`:""}
@@ -1226,7 +1234,7 @@ const cPool=pool("C"),bPool=pool("B");
 const cStarted=cPool.filter(x=>isLearned(x.w)).length,cMast=cPool.filter(x=>mastered(x.w)).length;
 const bStarted=bPool.filter(x=>isLearned(x.w)).length,bMast=bPool.filter(x=>mastered(x.w)).length;
 const estScore=Math.min(585,Math.round(345+(cStarted*0.045)+(cMast*0.035)+(bStarted*0.025)+(bMast*0.02)));
-const scoreGap=Math.max(0,550-estScore);
+const scoreGap=Math.max(0,TARGET_SCORE-estScore);
 
 // 近12周（84天）学习足迹热力图
 const hmCells=[];
@@ -1240,16 +1248,21 @@ const days7=[...Array(7)].map((_,i)=>{const d=new Date();d.setDate(d.getDate()-6
 
 m.innerHTML=`<div class="home-layout"><div class="col">
 <section class="box">
-<div class="sec-title"><span class="row" style="gap:6px">${ic("target",16)}<span>六级 550 分词汇战力诊断</span></span><button type="button" class="pill-action" onclick="openShareModal()">晒成绩单</button></div>
+<div class="sec-title"><span class="row" style="gap:6px">${ic("target",16)}<span>六级 600 分词汇战力诊断</span></span><button type="button" class="pill-action" onclick="openShareModal()">晒成绩单</button></div>
 <div class="rsb" style="background:var(--surface);padding:12px 14px;border-radius:12px;margin-bottom:12px;border:1px solid var(--hairline)">
 <div>
-<div class="xs">当前词汇支撑分预估（基线 345 → 目标 550）</div>
-<div class="num-xl" style="color:var(--brand);margin-top:2px">${estScore}<small>分</small> ${scoreGap>0?`<span class="xs" style="color:var(--accent);margin-left:6px">距目标还差约 ${scoreGap} 分</span>`:`<span class="xs" style="color:var(--ok);margin-left:6px">已达 550 分词汇线</span>`}</div>
+<div class="xs">当前词汇支撑分预估（基线 345 → 目标 600）</div>
+<div class="num-xl" style="color:var(--brand);margin-top:2px">${estScore}<small>分</small> ${scoreGap>0?`<span class="xs" style="color:var(--accent);margin-left:6px">距目标还差约 ${scoreGap} 分</span>`:`<span class="xs" style="color:var(--ok);margin-left:6px">已达 600 分词汇线</span>`}</div>
 </div>
 <button type="button" class="btn sm" onclick="${dueN>0?'startReviewOnly()':'startLearnOnly()'}">${dueN>0?`先清 ${dueN} 到期词`:`攻克核心词`}</button>
 </div>
 ${renderStat4(todayN,totalLearned,todayMin,actDays)}
 </section>
+<section class="box">
+<h2 class="sec-title"><span>2027 · 6 月备考阶段规划</span><button type="button" class="pill-action" onclick="go('trans')">翻译特训</button></h2>
+<div class="xs" style="margin-bottom:10px">目标 600 分：按词汇战力分三阶段推进，右上角进入翻译特训</div>`+
+PHASE_PLAN.map(([ph,detail],i)=>`<div class="detail-block" style="margin-top:8px"><span class="tag-lbl">${["①","②","③"][i]} ${escH(ph)}</span>${escH(detail)}</div>`).join("")+
+`</section>
 
 <section class="box">
 <h2 class="sec-title"><span>FSRS-6 记忆留存与遗忘曲线</span><span class="sub">当前保持率 ${avgR}% · S=${avgS.toFixed(1)}d</span></h2>
@@ -1298,6 +1311,46 @@ ${topWrong.length?topWrong.map((x,idx)=>`<div class="set-row" style="cursor:poin
 </section>
 </div></div>`;
 
+}else if(page==="trans"){
+if(!drillOrder.length){drillOrder=TRANSLATION_DRILLS.map((_,i)=>i).sort(()=>Math.random()-.5);drillIdx=0;drillShown=false}
+const cur=TRANSLATION_DRILLS[drillOrder[drillIdx%drillOrder.length]];
+m.innerHTML=`<div class="home-layout"><div class="col">
+<section class="box">
+<div class="rsb" style="margin-bottom:10px"><button type="button" class="btn subtle sm" style="min-height:36px;padding:0 12px" onclick="go('stat')">返回诊断</button><span class="xs">第 ${(drillIdx%drillOrder.length)+1} / ${drillOrder.length} 句 · ${escH(cur.tag)}</span><button type="button" class="icon-btn" onclick="drillNext()" aria-label="换一句">${ic("repeat",16)}</button></div>
+<div class="detail-block" style="background:var(--brand-soft);border-color:var(--line-strong);font-size:var(--fs-lg);line-height:1.8;color:var(--ink)">${escH(cur.zh)}</div>
+<div class="xs" style="margin:10px 0">先把句子在心里译成英文，重点用到本学期积累的六级表达，再对照参考译文。</div>
+${drillShown?`<div class="detail-block" style="border-color:var(--ok);background:var(--ok-soft)"><span class="tag-lbl ex-tag">参考译文 ${ic("volume",12)}</span><div style="font-family:var(--serif);margin-top:6px">${escH(cur.en)}</div><button type="button" class="audio-pill" style="margin-top:8px" onclick="playSentence('${esc(cur.en)}')">${ic("volume",13)} 朗读英文</button></div>
+<div class="row" style="margin-top:12px;gap:8px">
+<button type="button" class="btn subtle f1" style="min-height:42px" onclick="drillGrade(0)">没译出来</button>
+<button type="button" class="btn subtle f1" style="min-height:42px" onclick="drillGrade(1)">部分出错</button>
+<button type="button" class="btn f1" style="min-height:42px" onclick="drillGrade(2)">基本正确</button>
+</div>`:`<button type="button" class="btn f1" style="min-height:48px;width:100%" onclick="drillReveal()">${ic("eye",15)} 对照参考译文</button>`}
+</section>
+<section class="box">
+<h2 class="sec-title">本组统计</h2>
+<div class="mission-grid" style="margin-top:0">
+<div class="glass-stat"><span class="lbl">基本正确</span><span class="val" style="color:var(--ok)">${drillStats.ok}</span></div>
+<div class="glass-stat"><span class="lbl">部分出错</span><span class="val" style="color:var(--warn)">${drillStats.fuzzy}</span></div>
+<div class="glass-stat"><span class="lbl">没译出来</span><span class="val" style="color:var(--bad)">${drillStats.bad}</span></div>
+</div>
+<div class="xs">建议节奏：每天 5 句，考前一个月每日 10 句；译完大声朗读参考译文，积累表达。</div>
+</section>
+</div></div>`;
+}else if(page==="write"){
+m.innerHTML=`<div class="home-layout"><div class="col">
+<section class="box">
+<div class="rsb" style="margin-bottom:10px"><button type="button" class="btn subtle sm" style="min-height:36px;padding:0 12px" onclick="go('stat')">返回诊断</button><span class="xs">六级写作 20 分 · 功能句型 + 高分替换</span></div>
+<div class="xs">写作提分逻辑：卷面结构清晰（三段式）+ 每段 1-2 个高级句式（倒装/虚拟/强调/非谓语）+ 用词替换。以下句型按写作流程排列，考前默写三遍。</div>
+</section>`+
+WRITING_BANK.map(([cat,items])=>`<section class="box">
+<h2 class="sec-title">${escH(cat)}</h2>
+${items.map(([en,zh])=>`<div class="detail-block" style="margin-top:8px"><div style="font-family:var(--serif);color:var(--ink);font-size:var(--fs-base)">${escH(en)}</div><div class="xs" style="margin-top:4px">${escH(zh)}</div></div>`).join("")}
+</section>`).join("")+
+`<section class="box">
+<h2 class="sec-title">高分词替换表 <span class="sub">写作用它替掉小学词汇</span></h2>
+${UPGRADE_WORDS.map(([a,b,ex])=>`<div class="set-row"><div><div class="set-lbl"><span style="text-decoration:line-through;color:var(--sub)">${escH(a)}</span> → <b style="color:var(--brand)">${escH(b)}</b></div><div class="set-desc" style="font-family:var(--serif)">${escH(ex)}</div></div></div>`).join("")}
+</section>
+</div></div>`;
 }else if(page==="set"){
 m.innerHTML=`<div class="home-layout"><div>
 <section class="box set-group">
@@ -1485,6 +1538,7 @@ R("modal-root",`<div class="modal-mask" role="dialog" aria-modal="true" onclick=
 <div class="w-main" style="font-size:32px;margin-top:4px">${escH(w.w)}</div>
 <div class="ipa-row" style="margin-bottom:8px;justify-content:flex-start">${w.i?`<span class="ipa-txt">${escH(w.i)}</span>`:""}<button type="button" class="audio-pill" onclick="play('${esc(w.w)}')">${ic("volume",14)} 朗读</button></div>
 <div style="font-size:var(--fs-lg);font-weight:700;margin-bottom:8px">${escH(w.m)}</div>
+${w.en?`<div class="detail-block"><span class="tag-lbl">英文释义</span><span style="font-family:var(--serif);font-style:italic">${escH(w.en)}</span></div>`:""}
 ${pn.cols.length?`<div class="detail-block"><span class="tag-lbl col-tag">考场搭配</span>${pn.cols.map(escH).join(" ； ")}</div>`:""}
 ${pn.root?`<div class="detail-block"><span class="tag-lbl">词根助记</span>${escH(pn.root)}</div>`:""}
 ${w.ex?`<div class="detail-block" onclick="playSentence('${esc(w.ex.replace(/^\.\.\.|\.\.\.$/g,''))}')" style="cursor:pointer"><span class="tag-lbl ex-tag">真题例句 ${ic("volume",12)}</span>${makeCloze(w.ex,w.w,true)}${w.exm?`<div class="sub" style="margin-top:4px">${escH(w.exm)}</div>`:""}</div>`:""}
@@ -1510,6 +1564,12 @@ if(Q[qi]&&(mode==="quiz"||resolveCardMode(Q[qi])==="quiz"))ensureQuizOpts(Q[qi])
 revealed=false;checked=false;typed="";retryTyped="";quizPick=-1;
 render();
 if(Q[qi]&&(mode==="dict"||resolveCardMode(Q[qi])==="dict"))play(Q[qi].w);
+}
+function drillReveal(){drillShown=true;render()}
+function drillNext(){drillIdx++;drillShown=false;render()}
+function drillGrade(g){
+if(g===2)drillStats.ok++;else if(g===1)drillStats.fuzzy++;else drillStats.bad++;
+drillNext();
 }
 function go(p){
 clearTimeout(window.__qzTimer);stopAudio();
@@ -1694,6 +1754,10 @@ if(p&&p.then)p.then(markOk).catch(function(){if(currentAudio===a&&!started){star
 try{if(window.AndroidAudio&&window.AndroidAudio.cacheSentence)window.AndroidAudio.cacheSentence(cleanS)}catch(e){}
 }catch(e){showToast("例句朗读需联网")}
 }
+const TRANSLATION_DRILLS=[{"zh": "春节是中国最重要的传统节日，家人通常会在这一天团聚，共进丰盛的年夜饭。", "en": "The Spring Festival is the most important traditional festival in China, when family members usually get together and enjoy a sumptuous reunion dinner.", "tag": "中国文化"}, {"zh": "书法在中国有着悠久的历史，它不仅是书写文字的方式，更是一门承载着审美与修养的艺术。", "en": "Calligraphy has a long history in China. It is not merely a way of writing characters, but an art that carries aesthetics and personal cultivation.", "tag": "中国文化"}, {"zh": "茶文化在中国源远流长，中国人相信饮茶有益健康，能够使人内心平静、思路清晰。", "en": "Tea culture has a long history in China. Chinese people believe that drinking tea is beneficial to health, as it can bring inner peace and clear thinking.", "tag": "中国文化"}, {"zh": "长城是世界上最伟大的建筑工程之一，它凝聚了古代劳动人民的智慧与汗水。", "en": "The Great Wall is one of the greatest construction projects in the world, embodying the wisdom and diligence of the working people in ancient times.", "tag": "中国文化"}, {"zh": "苏州园林以其精巧的设计闻名于世，体现了人与自然和谐共处的理念。", "en": "Suzhou gardens are world-famous for their exquisite designs, reflecting the ideal of harmony between man and nature.", "tag": "中国文化"}, {"zh": "高铁网络的迅速发展极大地方便了人们的出行，促进了沿线城市的经济发展。", "en": "The rapid development of the high-speed railway network has greatly facilitated travel and boosted the economic growth of cities along the lines.", "tag": "科技与发展"}, {"zh": "移动支付在中国已经十分普及，人们出门几乎不需要携带现金。", "en": "Mobile payment has become so widespread in China that people hardly need to carry cash when going out.", "tag": "科技与发展"}, {"zh": "人工智能正在改变我们的生活方式，但同时也带来了就业结构方面的挑战。", "en": "Artificial intelligence is changing the way we live, while at the same time posing challenges to the employment structure.", "tag": "科技与发展"}, {"zh": "近年来，中国在航天领域取得了举世瞩目的成就，包括载人航天和月球探测。", "en": "In recent years, China has made remarkable achievements in aerospace, including manned spaceflight and lunar exploration.", "tag": "科技与发展"}, {"zh": "中国的5G技术处于世界领先地位，为智慧城市的建设奠定了坚实基础。", "en": "China's 5G technology is in a leading position in the world, laying a solid foundation for the construction of smart cities.", "tag": "科技与发展"}, {"zh": "中国政府高度重视教育，不断加大对教育的投入，努力促进教育公平。", "en": "The Chinese government attaches great importance to education, continuously increasing investment in it and striving to promote educational equality.", "tag": "教育与人才"}, {"zh": "随着互联网的普及，在线教育使越来越多的人能够随时随地学习新知识。", "en": "With the popularity of the Internet, online education enables more and more people to acquire new knowledge anytime and anywhere.", "tag": "教育与人才"}, {"zh": "越来越多的中国学生选择出国留学，以开阔视野、增长见识。", "en": "An increasing number of Chinese students choose to study abroad so as to broaden their horizons and enrich their experience.", "tag": "教育与人才"}, {"zh": "职业教育与普通教育同等重要，社会需要各类高素质的技能型人才。", "en": "Vocational education is as important as general education, for society needs skilled talents of various kinds with high quality.", "tag": "教育与人才"}, {"zh": "终身学习的理念正在深入人心，学习不再局限于校园之内。", "en": "The concept of lifelong learning is gaining popularity, as learning is no longer confined to the campus.", "tag": "教育与人才"}, {"zh": "改革开放以来，中国经济持续快速发展，人民生活水平显著提高。", "en": "Since the reform and opening-up, China's economy has maintained rapid growth, and people's living standards have improved remarkably.", "tag": "经济与生活"}, {"zh": "电子商务的兴起改变了传统的消费方式，网上购物已成为日常生活的一部分。", "en": "The rise of e-commerce has transformed the traditional way of consumption, and online shopping has become part of daily life.", "tag": "经济与生活"}, {"zh": "中国积极推动可持续发展，大力投资清洁能源以应对气候变化。", "en": "China actively promotes sustainable development and invests heavily in clean energy to cope with climate change.", "tag": "经济与生活"}, {"zh": "城镇化进程的加快为农村人口提供了更多的就业机会，同时也带来了新的社会问题。", "en": "The acceleration of urbanization has provided rural people with more job opportunities, while bringing about new social problems as well.", "tag": "经济与生活"}, {"zh": "中欧之间的贸易往来日益密切，双方在多个领域展开了深入合作。", "en": "Trade between China and Europe is becoming increasingly close, with both sides carrying out in-depth cooperation in various fields.", "tag": "经济与生活"}, {"zh": "随着人口老龄化问题的加剧，中国社会正努力完善养老服务体系。", "en": "As the problem of population aging intensifies, Chinese society is making great efforts to improve the elderly care service system.", "tag": "社会与民生"}, {"zh": "越来越多的年轻人加入志愿者队伍，为社区建设贡献自己的力量。", "en": "More and more young people have joined the volunteer team, contributing their own strength to community building.", "tag": "社会与民生"}, {"zh": "公众的环保意识不断增强，垃圾分类在许多城市已经蔚然成风。", "en": "Public awareness of environmental protection has been growing, and garbage sorting has become common practice in many cities.", "tag": "社会与民生"}, {"zh": "健康意识的提高使人们更加注重均衡饮食和定期锻炼。", "en": "The rising awareness of health has made people pay more attention to a balanced diet and regular exercise.", "tag": "社会与民生"}, {"zh": "政府对食品安全实行严格监管，以保障人民群众的身体健康。", "en": "The government exercises strict supervision over food safety so as to safeguard the health of the people.", "tag": "社会与民生"}, {"zh": "兵马俑被誉为世界第八大奇迹，每年吸引着成千上万的游客前来参观。", "en": "The Terracotta Warriors are known as the eighth wonder of the world, attracting thousands upon thousands of visitors every year.", "tag": "历史与名胜"}, {"zh": "西湖以其秀丽的湖光山色和众多的历史传说而闻名天下。", "en": "The West Lake is famous throughout the world for its beautiful scenery of hills and waters as well as its numerous historical legends.", "tag": "历史与名胜"}, {"zh": "丝绸之路是古代连接中国与欧洲的重要贸易通道，促进了东西方文明的交流。", "en": "The Silk Road was a vital trade route linking China and Europe in ancient times, which promoted the exchange between Eastern and Western civilizations.", "tag": "历史与名胜"}, {"zh": "故宫是世界上现存规模最大、保存最完整的古代宫殿建筑群。", "en": "The Palace Museum, known as the Forbidden City, is the largest and best-preserved ancient palace complex in the world.", "tag": "历史与名胜"}, {"zh": "黄河被誉为中华民族的母亲河，孕育了灿烂的中华文明。", "en": "The Yellow River, hailed as the mother river of the Chinese nation, gave birth to the splendid Chinese civilization.", "tag": "历史与名胜"}];
+const WRITING_BANK=[["图表 / 图画描述", [["As is vividly depicted in the chart, ... has witnessed a dramatic change over the past decade.", "图表作文万能开头：如图所示，……在过去十年经历了显著变化。"], ["The bar chart illustrates the percentage of ... in 2020 compared with that in 2015.", "柱状图对比句式：柱状图展示了……与……的百分比对比。"], ["What is conveyed in the picture is that ...", "图画作文开头：图画所传达的信息是……"], ["The number of ... increased / decreased sharply, rising / dropping from ... to ...", "数据变化句式：数量急剧上升/下降，从……升至/降至……"], ["In contrast, the figure for ... remained relatively stable during the same period.", "对比句：相比之下，同期……的数据相对稳定。"]]], ["引出现象 / 话题", [["In recent years, ... has become a heated topic among the general public.", "引出热议话题：近年来，……成为公众热议的话题。"], ["Nowadays, there is a growing tendency for ... to ...", "现象描述：如今，……的趋势日益明显。"], ["With the rapid development of ..., an increasing number of people have begun to ...", "背景引入：随着……的迅速发展，越来越多的人开始……"], ["It is universally acknowledged that ... plays an increasingly important role in ...", "公认观点：众所周知，……在……中扮演着日益重要的角色。"], ["Recently, the issue of ... has aroused wide public concern.", "引出争议话题：最近，……的问题引起了广泛的公众关注。"]]], ["观点与论证", [["From my perspective, the advantages of ... far outweigh its disadvantages.", "表明立场：在我看来，……利远大于弊。"], ["There are two fundamental factors contributing to this phenomenon.", "原因分析框架：有两个基本因素促成了这一现象。"], ["First and foremost, ... Moreover, ... Last but not least, ...", "三条理由连接词组：首先/其次/最后。"], ["A case in point is that ..., which clearly demonstrates ...", "举例论证：一个典型的例子是……，这清楚地表明……"], ["According to a recent survey conducted by ..., nearly ... percent of respondents ...", "数据论证：根据……的最新调查，近……%的受访者……"], ["It is the responsibility of every individual to ...", "强调责任：……是每个人的责任。（It is ... that/to 强调句）"]]], ["让步 / 转折 / 对比", [["Admittedly, ... However, this does not mean that ...", "让步转折：诚然……，但这并不意味着……"], ["While some people argue that ..., others maintain that ...", "观点对比：尽管有人认为……，另一些人则坚持……"], ["Despite the fact that ..., ... still faces a series of challenges.", "尽管句式：尽管……，……仍然面临一系列挑战。"], ["On the one hand, ... On the other hand, ...", "两方面对照：一方面……另一方面……"], ["By no means does it suggest that we should ...", "倒装强调：这绝不意味着我们应该……（倒装句加分）"]]], ["结论与建议", [["In conclusion, ... It is high time that we placed considerable emphasis on ...", "结论 + 虚拟语气：是时候高度重视……了（high time + 过去式，语法亮点）。"], ["To sum up, ... Only in this way can we ...", "总结 + 倒装：只有这样我们才能……（Only 倒装，加分句式）。"], ["It is advisable for the authorities to introduce relevant regulations to ...", "建议措施：当局宜出台相关规定以……"], ["As college students, we should ... rather than ...", "联系自身：作为大学生，我们应当……而不是……"], ["If every member of society makes a concerted effort, ... will be within reach.", "展望收尾：只要全社会共同努力，……指日可待。"]]]];
+const UPGRADE_WORDS=[["think", "contend / maintain", "I contend that ..."], ["important", "paramount / crucial", "plays a paramount role in ..."], ["more and more", "an increasing number of", "an increasing number of graduates"], ["but / however", "nevertheless / whereas", "He failed; nevertheless, he tried again."], ["because of", "owing to / on account of", "owing to the shortage of funds"], ["get", "acquire / obtain", "acquire practical skills"], ["help", "facilitate / promote", "facilitate cross-cultural communication"], ["show", "demonstrate / reveal", "the chart demonstrates that ..."], ["good", "beneficial / rewarding", "a rewarding experience"], ["bad", "detrimental / adverse", "be detrimental to one's health"], ["famous", "renowned / eminent", "a world-renowned university"], ["improve", "enhance / boost", "enhance national competitiveness"], ["solve", "tackle / address / resolve", "address the root cause"], ["use", "employ / adopt / harness", "harness solar energy"], ["very", "exceedingly / considerably", "exceedingly important"]];
+let drillIdx=-1,drillShown=false,drillStats={ok:0,fuzzy:0,bad:0},drillOrder=[];
 const SENT_PACK_URL="https://github.com/wcx1208/cet6-words/releases/download/v3.4/sentence-voice-pack.zip";
 const SENT_TOTAL=6090;
 function packIsNative(){return !!(window.AndroidAudio&&window.AndroidAudio.downloadPack)}
