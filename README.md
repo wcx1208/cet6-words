@@ -1,101 +1,113 @@
-# 我的六级单词
+<div align="center">
 
-六级（CET-6）备考背单词应用：**安卓离线版 + 网页版**同源，6081 词全例句带中文翻译，四种学习模式 + 智能递进，FSRS-6 间隔重复调度。
+# 📚 我的六级单词
 
-> 目标 600 分 · 从 345 分起步的全程备考系统 · 考期 2027 年 6 月
+**为「六级 600 分」打造的离线背单词应用 · 安卓 APP 与网页版，同一套代码**
+
+[![Release](https://img.shields.io/github/v/release/wcx1208/cet6-words?style=flat-square)](https://github.com/wcx1208/cet6-words/releases/latest)
+[![词库](https://img.shields.io/badge/词库-6081_词-orange?style=flat-square)](#-功能)
+[![例句](https://img.shields.io/badge/例句-100%25_带翻译-green?style=flat-square)](#-功能)
+[![平台](https://img.shields.io/badge/平台-Android_%7C_网页-blue?style=flat-square)](#-下载安装安卓)
+[![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](LICENSE)
+
+**[📲 下载安卓 APP](#-下载安装安卓) · [🌐 网页版直接用](https://wcx1208.github.io/cet6-words/) · [🖨 配套打印资料](#-配套打印资料)**
+
+<table>
+<tr>
+<td><img src="docs/screenshots/home-light.png" width="200"/></td>
+<td><img src="docs/screenshots/study.png" width="200"/></td>
+<td><img src="docs/screenshots/detail.png" width="200"/></td>
+</tr>
+<tr>
+<td><img src="docs/screenshots/home-dark.png" width="200"/></td>
+<td><img src="docs/screenshots/stats.png" width="200"/></td>
+<td><img src="docs/screenshots/trans.png" width="200"/></td>
+</tr>
+</table>
+
+*全套界面支持深浅色 · 真机截图*
+
+</div>
 
 ---
 
-## 📲 下载安装（安卓）
+## ✨ 为什么做这个
 
-[**下载最新版 v3.6.3**](https://github.com/wcx1208/cet6-words/releases/latest) · Android 8.0+ · 约 41 MB
+市面上的背单词应用：要么强制联网、要么塞广告、要么把你的学习进度锁在自家账号里。
 
-| 版本 | 界面 | 说明 |
-|---|---|---|
-| **v3.6.3**（推荐） | 与网页版完全同一套 | 稳定性与性能修复：并发竞态/计数原子化/资源泄漏、壁图拆存与滑杆省流、Fisher-Yates 均匀洗牌、词表滚动减负 |
-| 更早版本 | v3.6.2 / v3.6.1 / v3.6 / v3.5 / v3.4 / v3.0 / v2.9 均保留在 Releases |
+这个项目为**一个真实目标**而生：作者本人从六级 345 分（听力 109 / 阅读 109 / 写译 127）备考 600 分，全程自用。所以它是这样设计的：
 
-三版同包名，覆盖安装即可；v3.0 起会把 v2.9 的学习进度与打卡记录自动迁移过来。
+- **6 秒打开，飞行模式照常学** —— 6081 词、6090 条真人美音、例句发音全部内置，无广告无登录
+- **进度永远在你手里** —— 数据存本地，一键导出 JSON 备份，换手机不丢
+- **每一个功能都能回答"对考场上分有什么用"** —— 翻译特训对应翻译题、写作句型库对应作文、真题例句对应阅读
 
-### 近期主要更新
-- **翻译特训**：30 句六级高频话题训练句（六大话题筛选，中译英自评三档，进度持久化）
-- **写作句型库**：五类功能句型 26 条 + 高分词替换 15 组
-- **英文释义**：按中文释义词性对齐，错位义项已剔除
-- **例句离线发音包**：设置页一键下载，6079 句全部离线可听
+## 🚀 功能速览
 
-**完全离线**：6081 词、6090 条真人美音、界面资源全部内置，飞行模式下照常使用。
+| 模块 | 能力 |
+|---|---|
+| 🧠 **记忆调度** | 真 [FSRS-6](https://github.com/open-spaced-repetition/py-fsrs)（21 参数幂律遗忘曲线）：每个词精确维护记忆稳定性 S 与难度 D，在快忘时安排复习 |
+| 📚 **词库** | 6081 词 · 四级难度分组（核心 2228 / 基础 2208 / 拓展 1557 / 进阶 88）· 例句 **100% 带中文翻译** · 英文释义 93.6% · 易混辨析 93.8% · 词根记忆法 · 考场搭配 |
+| 🎴 **四种模式 + 智能递进** | 卡片认词 / 释义选择 / 拼写默写 / 听写；智能模式按每个词的记忆阶段**自动配题**（新词→语境认词，巩固→四选一，熟悉→拼写） |
+| ✍️ **翻译特训** | 30 句六级高频话题训练句（中国文化/科技/教育/经济/社会/名胜六类），中译英自评三档，进度持久化 |
+| 📝 **写作句型库** | 图表描述/引出话题/观点论证/让步转折/结论建议五类功能句型 + 高分词替换表 |
+| 🔊 **发音** | 6090 条内置真人美音 → 在线有道 → 百度 TTS；**例句 6079 句离线发音包**一键下载 |
+| 📊 **统计诊断** | 600 分词汇战力实时预估（满掌握 = 600）· FSRS 记忆存留曲线 · 12 周热力图 · 错词 Top 10 · 三阶段备考规划 |
+| 🎨 **个性化** | 6 套渐变壁纸 + 相册自定义（应用内压缩）· 壁纸强度/卡片不透明双滑杆 · 深浅色主题 · 177 条英文名言 |
+| 🔄 **数据自主** | 学习进度导出/导入 JSON · 收藏 · 标熟知 · 撤销栈 · 跨天不断学 |
 
-## 🌐 网页版
+## 📲 下载安装安卓
 
-**https://wcx1208.github.io/cet6-words/**
+**[前往 Releases 下载最新 APK](https://github.com/wcx1208/cet6-words/releases/latest)** · Android 8.0+ · 约 41 MB
 
-源码在 `docs/` 目录（GitHub Pages）。手机浏览器可"添加到主屏幕"当 App 用，进度存浏览器本地。
+安装时提示"未知来源应用"选择允许即可；同包名覆盖升级，学习进度自动迁移。
 
-安卓版的界面就是这份 `docs/index.html` 的原样内嵌（见 `app/src/main/assets/web/`）：`docs/` 是唯一改动源，Gradle 构建期自动同步进 assets（`syncWebDocs` 任务），命令行构建脚本也会先同步再打包，两端永远一致。
+> 也可以直接用 [网页版](https://wcx1208.github.io/cet6-words/)（手机浏览器"添加到主屏幕"），与 APP 同一套界面，进度各自独立存储。
 
-## ✨ 功能
+## 🖨 配套打印资料
 
-### 词库
+配合 APP 使用的两份打印手册（仓库外，随项目一起分发）：
 
-- **6081 词**：手册精选 + 不背单词 CET6 词书 + ECDICT 考纲查漏（多源去重合并）
-- **例句 100% 覆盖**：真题例句优先，其余来自 Tatoeba 开放语料；例句均配中文翻译
-- **4 级难度**：核心 2228 / 基础 2208 / 拓展 1557 / 进阶 88（BNC 词频 + 考纲标签客观定档）
-- 每条含：音标 · 中英释义 · 例句+翻译 · 易混词辨析（形近/近义）· 词根记忆法 · 搭配
+- **《六级核心词汇全程手册》** —— 三级分级精记 649 记忆单元 + APP 同源高频词表（详解 300 + 速刷 500）
+- **《六级 345 到 600 全程作战手册》** —— 三阶段作战计划、分题型提分攻略、逐周任务、打卡日历与精听/错题工具页
 
-### 学习
-
-- **四种模式**：卡片认词 / 释义选择 / 拼写默写 / 听写
-- **FSRS-6**：21 参数幂律遗忘曲线，精确维护记忆稳定性 S 与难度 D（[py-fsrs](https://github.com/open-spaced-repetition/py-fsrs) 移植）
-- **不限量学习**：不设每日新词上限，随时学随时停
-- 错词本 · 目标环 · 连续打卡 · 12 周热力图 · 跨天不断学 · 撤销栈 · 进度导入导出
-
-### 发音
-
-单词：**内置真人美音（6090 条）→ 在线有道 → 百度 TTS**
-例句：**百度神经语音**，听过的句子自动缓存，整包可在设置页一键下载（6079 句全部离线可听）
-
-安卓版通过 JS Bridge 直接播放 APK 内的 mp3，网页版在线播放。
-
-### 个性化
-
-- 壁纸：6 套渐变 + 相册自定义（自动压缩存储），壁纸强度 / 界面不透明双滑杆
-- 177 条英文激励名言
-- 深色模式（跟随系统 / 手动切换），安卓版状态栏同步变色
-
-## 🗂 项目结构
-
-```
-app/src/main/java/com/wcx/mywords/
-└── MainActivity.kt    WebView 外壳：加载 assets/web、发音桥接、进度迁移
-
-app/src/main/assets/
-├── web/index.html     与 docs/index.html 同一份界面（构建期自动同步）
-├── web/data.js        6081 词条数据
-└── audio/us/          6090 条真人美音 mp3
-
-docs/                  网页版（GitHub Pages）
-legacy-compose/        v2.9 及更早的原生 Compose 界面源码（不参与编译）
-```
-
-## 🔨 构建
-
-用 Android Studio 打开本目录（AGP 8.4.2 / Kotlin 1.9.24 / compileSdk 34 / JDK 17），或命令行：
-
-```
-gradlew assembleDebug        # 产物：app/build/outputs/apk/debug/app-debug.apk
-```
-
-> 项目路径不能含中文（AGP 限制）。
-
-## 📚 数据来源
+## 🔬 数据与算法
 
 | 来源 | 用途 | 许可 |
 |---|---|---|
-| [kajweb/dict](https://github.com/kajweb/dict) | 不背单词 CET6 词书（释义/例句/记忆法） | — |
-| [ECDICT](https://github.com/skywind3000/ECDICT) | 音标 · 柯林斯星级 · BNC 词频 · 考纲标签 | MIT |
+| [kajweb/dict](https://github.com/kajweb/dict) | 开源六级词书数据（释义 / 真题例句 / 记忆法） | — |
+| [ECDICT](https://github.com/skywind3000/ECDICT) | 英文释义 · 柯林斯星级 · BNC 词频 · 考纲标签 | MIT |
 | [Tatoeba](https://tatoeba.org) | 例句补充 | CC-BY |
-| [py-fsrs](https://github.com/open-spaced-repetition/py-fsrs) | 复习算法参考 | MIT |
+| [py-fsrs](https://github.com/open-spaced-repetition/py-fsrs) | FSRS-6 复习算法参考 | MIT |
 
-## 📄 备考配套打印资料
+<details>
+<summary><b>记忆算法细节（点开）</b></summary>
 
-同系列（本地文件，不在本仓库）：《六级核心词汇全程手册》《六级345到600全程作战手册》
+移植 FSRS-6 的 21 个默认权重参数，每个词维护：
+
+- **稳定性 S**：记忆保留率从 100% 衰减到 90% 所需的天数
+- **难度 D**：1–10，由你的历史评分动态调整
+- **可提取性 R**：`R(t) = (1 + FACTOR·t/S)^DECAY`，在 R 逼近 90% 时安排下一次复习
+
+评分四级（记错 / 模糊 / 认识 / 简单），分别对应重学、间隔缩放与稳定性增长曲线。
+</details>
+
+## 🛠 工程亮点
+
+- **单文件零依赖**：整个应用是一个 158KB 的 `index.html` + 一个 `data.js`，安卓端为 WebView 外壳（APK 41MB，其中 38MB 是发音音频）
+- **两端同源**：`docs/` 是唯一改动源，Gradle 构建期自动同步进 APK 的 assets
+- **经过三轮独立审查**：Node VM 测试台驱动 12 个场景（背词持久化 / 撤销边界 / 会话恢复 / 跨天 / FSRS 边界 / 6081 词逐词选项生成）全部通过
+- **并发安全**：下载 CAS 抢锁、AtomicInteger 计数、单线程任务池、音频焦点管理
+
+## 🗺 Roadmap
+
+- [ ] 真题听力逐句精听模式
+- [ ] 词根词缀图谱浏览
+- [ ] 拼写模式接入例句语境
+
+## 🤝 贡献
+
+发现 Bug 或有功能想法，欢迎 [提 Issue](https://github.com/wcx1208/cet6-words/issues)！如果这个项目帮到了你，**点一个 Star 就是最好的鼓励** ⭐
+
+## 📄 许可
+
+[MIT](LICENSE) · 词库数据版权归各自数据源所有，仅用于学习用途
