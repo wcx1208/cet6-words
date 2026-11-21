@@ -11,8 +11,8 @@ android {
         applicationId = "com.wcx.mywords"
         minSdk = 26
         targetSdk = 34
-        versionCode = 25
-        versionName = "3.6.1"
+        versionCode = 26
+        versionName = "3.6.2"
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17

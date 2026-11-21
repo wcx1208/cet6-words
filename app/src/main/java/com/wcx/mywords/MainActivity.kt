@@ -280,8 +280,8 @@ class MainActivity : Activity() {
                 tmp = File(sentDir(), f.name + "." + System.nanoTime() + ".tmp")
                 val conn = URL(baiduTtsUrl(canonText(text), 4)).openConnection() as HttpURLConnection
                 conn.connectTimeout = 15000; conn.readTimeout = 30000
-                if (conn.responseCode !in 200..299) throw IllegalStateException("HTTP ${conn.responseCode}")
                 conn.setRequestProperty("User-Agent", "Mozilla/5.0")
+                if (conn.responseCode !in 200..299) throw IllegalStateException("HTTP ${conn.responseCode}")
                 conn.inputStream.use { inp -> FileOutputStream(tmp).use { out -> inp.copyTo(out) } }
                 if (tmp.length() > 3500) {
                     if (f.exists()) f.delete()

@@ -1394,7 +1394,7 @@ WALLS.filter(x=>x[0]!=="custom").map(([wid,wn,wbg])=>`<button type="button" clas
 <div><div class="set-lbl">例句语音包（${SENT_TOTAL} 句）</div><div class="set-desc" id="pack-txt">${packIsNative()?(function(){const st=packStateNow();if(st&&st.state==="downloading")return "下载中…";const c=Math.min(window.AndroidAudio.packCount(),SENT_TOTAL);if(c>=SENT_TOTAL)return "✅ 全部例句已离线 · 点右侧可重新下载更新";if(c>0)return "已离线缓存 "+c+" / "+SENT_TOTAL+" 句 · 整包约 68MB";return "下载整包后，全部例句发音可离线播放"})():"网页版支持在线朗读；整包离线下载仅安卓版提供"}</div></div>
 ${packIsNative()?'<button type="button" class="btn subtle sm" style="min-height:40px;padding:0 12px" onclick="downloadSentPack()">下载整包</button>':""}
 </div>
-<div class="pbar brand" style="margin-top:8px"><i id="pack-bar" style="width:${(packStateNow()&&packStateNow().percent>0)?packStateNow().percent:0}%"></i></div>
+<div class="pbar brand" style="margin-top:8px"><i id="pack-bar" style="width:${(function(){const st=packStateNow();if(st&&st.percent>0)return st.percent;if(packIsNative()&&window.AndroidAudio.packCount()>=SENT_TOTAL)return 100;return 0})()}%"></i></div>
 </section>
 
 <section class="box set-group">
@@ -1582,7 +1582,7 @@ function drillNext(){drillIdx++;drillShown=false;render()}
 function drillGrade(g){
 if(g===2){drillStats.ok++;drillRound.ok++}else if(g===1){drillStats.fuzzy++;drillRound.fuzzy++}else{drillStats.bad++;drillRound.bad++}
 saveDrillStats();bump(1);
-if(drillIdx+1===drillOrder.length&&drillOrder.length>1){
+if((drillIdx+1)%drillOrder.length===0&&drillOrder.length>1){
 showToast(`本轮 ${drillOrder.length} 句完成 ✓ 正确 ${drillRound.ok} · 出错 ${drillRound.fuzzy+drillRound.bad}，换个话题继续！`);
 drillRound={ok:0,fuzzy:0,bad:0};
 }
@@ -1812,7 +1812,7 @@ setInterval(function(){
 const bar=document.getElementById("pack-bar");if(!bar)return;
 const st=packStateNow();if(!st)return;
 if(st.state==="downloading"){bar.style.width=(st.percent<0?8:st.percent)+"%"}
-else if(st.state==="done"&&st.percent>=100){bar.style.width="100%";const t=document.getElementById("pack-txt");if(t&&t.textContent.indexOf("已离线缓存")===0)t.textContent="✅ 全部例句已离线 · 点右侧可重新下载更新"}
+else if(st.state==="done"&&st.percent>=100){bar.style.width="100%";const t=document.getElementById("pack-txt");if(t&&!t.textContent.includes("✅ 全部例句已离线"))t.textContent="✅ 全部例句已离线 · 点右侧可重新下载更新"}
 },1500);
 document.addEventListener("packstate",function(){
 const bar=document.getElementById("pack-bar");if(!bar)return;
