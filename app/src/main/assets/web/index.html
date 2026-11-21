@@ -267,6 +267,7 @@ html.dark .grade-btn{box-shadow:inset 0 1px 1px rgba(255,255,255,.22),0 8px 20px
 .filter-btn.on{border-color:var(--brand);background:var(--brand-soft);color:var(--brand);font-weight:700}
 .vlist-shell{position:relative;display:flex;gap:var(--sp-2)}
 .vlist-viewport{flex:1;height:calc(100vh - 295px);height:calc(100dvh - 295px - env(safe-area-inset-top) - env(safe-area-inset-bottom));min-height:320px;overflow-y:auto;background:var(--card);border:1px solid var(--line-strong);border-radius:var(--r-card);box-shadow:var(--shadow);position:relative}
+body[data-page="list"] .vlist-viewport{box-shadow:none}
 .vlist-spacer{position:relative;width:100%}
 .vlist-row{position:absolute;left:0;right:0;height:82px;padding:8px 12px;border-bottom:1px solid var(--hairline);display:flex;align-items:center;justify-content:space-between;gap:6px;cursor:pointer;transition:background 140ms var(--ease)}
 .vlist-row:hover{background:var(--surface)}
@@ -386,15 +387,10 @@ const QUOTES=[
 ];
 let quoteOffset=0;
 function quoteOf(){return QUOTES[(Math.floor(Date.now()/86400000)+quoteOffset)%QUOTES.length]}
-// 换名言只更新名言节点，不再整页 render()（会重算统计并让进度环动画重播）
-function nextQuote(){
-quoteOffset++;
-const qObj=quoteOf(),wrap=document.getElementById("quote-clip");
-if(!wrap){render();return}
-wrap.onclick=function(){playSentence(qObj.q)};
-const qEl=wrap.querySelector("q"),aEl=wrap.querySelector("span");
-if(qEl)qEl.textContent=qObj.q;
-if(aEl)aEl.textContent=qObj.a;
+function quoteRefresh(){
+const el=document.getElementById("home-quote");
+if(!el){render();return}
+el.innerHTML=`“${escH(quoteOf().q)}” — ${escH(quoteOf().a)}`;
 }
 
 const TIERS=[["C","核心","高频必考"],["B","基础","稳扎稳打"],["T","拓展","高分进阶"],["J","进阶","拔高冲刺"]],DAY=86400000,MINUTE=60000;
@@ -501,6 +497,9 @@ var S=safeLoad("srs",{}),H=safeLoad("hist",{}),CFG=Object.assign({daily:20,examD
 if(CFG.uiA===1&&!CFG._v2ui){CFG.uiA=.66;CFG._v2ui=1}
 CFG.daily=Math.min(500,Math.max(1,parseInt(CFG.daily,10)||20));
 if(CFG.examDate==="2026-12-15")CFG.examDate="2027-06-13";
+try{
+if(CFG.wallImg){localStorage.setItem("wall_img",CFG.wallImg);delete CFG.wallImg;save()}
+}catch(e){}
 if(!CFG.examDate||!/^\d{4}-\d{2}-\d{2}$/.test(CFG.examDate))CFG.examDate=defaultExamDate();
 var tier=localStorage.getItem("tier")||"C";if(!TIERS.some(x=>x[0]===tier))tier="C";
 var mode=localStorage.getItem("mode")||"smart";if(!["smart","card","quiz","type","dict"].includes(mode))mode="smart";
@@ -510,6 +509,9 @@ var page="home";
 function sanitizeState(){
 CFG.daily=Math.min(500,Math.max(1,parseInt(CFG.daily,10)||20));
 if(CFG.examDate==="2026-12-15")CFG.examDate="2027-06-13";
+try{
+if(CFG.wallImg){localStorage.setItem("wall_img",CFG.wallImg);delete CFG.wallImg;save()}
+}catch(e){}
 if(!CFG.examDate||!/^\d{4}-\d{2}-\d{2}$/.test(CFG.examDate))CFG.examDate=defaultExamDate();
 for(const k in S){
 const st=S[k];
@@ -528,8 +530,6 @@ const FSRS_FACTOR=Math.pow(0.9,1/FSRS_DECAY)-1;
 const DESIRED_RETENTION=0.9;
 
 function clamp(v,lo,hi){return Math.min(hi,Math.max(lo,v))}
-// 标准 Fisher-Yates 洗牌：.sort(()=>Math.random()-.5) 在 V8 下分布严重不均（会让选择题正确项位置有偏）
-function shuffle(arr){for(let i=arr.length-1;i>0;i--){const j=(Math.random()*(i+1))|0;const t=arr[i];arr[i]=arr[j];arr[j]=t}return arr}
 function fsrsInitS(rating){return Math.max(0.1,FSRS_W[rating-1])}
 function fsrsInitD(rating){return clamp(FSRS_W[4]-Math.exp(FSRS_W[5]*(rating-1))+1,1,10)}
 function fsrsShortS(s,rating){
@@ -552,7 +552,7 @@ const st=s/Math.exp(FSRS_W[17]*FSRS_W[18]);
 return Math.min(lt,st);
 }
 function fsrsInterval(s){
-// FSRS-6 恒定 R=DESIRED_RETENTION(0.9)：(R^(1/DECAY)-1) 与 FSRS_FACTOR 数学上相消，间隔即稳定度天数
+// DESIRED_RETENTION 恒为 0.9，此时 (0.9^(1/DECAY)-1) === FSRS_FACTOR，公式约简为 s
 return clamp(Math.round(s),1,365);
 }
 function fsrsRetrievability(sObj,nowMs=Date.now()){
@@ -602,9 +602,7 @@ stab=Math.max(stab,iv);
 const rawIv=fsrsInterval(stab);
 const hardIv=Math.max(1,Math.min(rawIv,Math.round((s.iv||1)*1.25)));
 if(rating===2)iv=hardIv;
-// Good（认识）：下限 1 天，且 ≥ 原间隔+1、≥ rawIv。原先还叠加 hardIv+1，会把刚忘过的词（iv=0）
-// 同日重现点「认识」时强抬到 2 天、跳过 1 天档，故去掉该项
-else if(rating===3){iv=Math.max(1,(s.iv||0)+1,rawIv);stab=Math.max(stab,iv)}
+else if(rating===3){iv=Math.max(1,hardIv,rawIv);stab=Math.max(stab,iv)}
 else{iv=Math.max(4,(s.iv||1)+3,hardIv+2,Math.round(rawIv*1.3));stab=Math.max(stab,iv)}
 }
 iv=clamp(iv,0,180);
@@ -625,10 +623,9 @@ const s2=next(s,g);
 return s2.iv<=1?"明天":s2.iv+"天后";
 }
 function pool(t){return TIER_POOLS[t]||WORDS.filter(x=>x.t===t)}
-function getSmartPlan(t=tier,pre){
-// pre：render() 单遍扫描已算出的 {fresh,due,highFresh}，避免对 pool 再做 3 轮 filter
-const freshN=pre?pre.fresh:pool(t).filter(x=>!isLearned(x.w)).length,dueN=pre?pre.due:pool(t).filter(x=>isLearned(x.w)&&due(x.w)).length;
-const highFreshN=pre?pre.highFresh:pool(t).filter(x=>!isLearned(x.w)&&(x.imp||2)>=3).length;
+function getSmartPlan(t=tier){
+const p=pool(t),freshN=p.filter(x=>!isLearned(x.w)).length,dueN=p.filter(x=>isLearned(x.w)&&due(x.w)).length;
+const highFreshN=p.filter(x=>!isLearned(x.w)&&(x.imp||2)>=3).length;
 const todayMs=new Date().setHours(0,0,0,0),examMs=new Date(CFG.examDate+"T00:00:00").getTime()||todayMs+30*DAY;
 const daysLeft=Math.max(1,Math.ceil((examMs-todayMs)/DAY));
 const bufferDays=daysLeft>14?7:(daysLeft>5?3:0),learnWindow=Math.max(1,daysLeft-bufferDays);
@@ -676,7 +673,7 @@ const WALLS=[
 ];
 function wallBg(){
 const id=CFG.wall||"none";
-if(id==="custom")return CFG.wallImg?`url("${CFG.wallImg}")`:"";
+if(id==="custom"){const wi=localStorage.getItem("wall_img")||"";return wi?`url("${wi}")`:"";}
 const it=WALLS.find(x=>x[0]===id)||WALLS[0];
 return it[2];
 }
@@ -705,7 +702,7 @@ const rd=new FileReader();
 rd.onload=()=>{
 const img=new Image();
 img.onload=()=>{
-const prevImg=CFG.wallImg,prevWall=CFG.wall;
+const prevImg=localStorage.getItem("wall_img")||"",prevWall=CFG.wall;
 const compress=(maxSide,q)=>{
 const sc=Math.min(1,maxSide/Math.max(img.width,img.height));
 const c=document.createElement("canvas");
@@ -716,16 +713,17 @@ return c.toDataURL("image/jpeg",q);
 try{
 let data=compress(1600,.82);
 if(data.length>900000)data=compress(1100,.7);
-CFG.wallImg=data;CFG.wall="custom";
-if(!save()){
+const setWallImg=(d)=>{try{localStorage.setItem("wall_img",d);return localStorage.getItem("wall_img")===d}catch(e){return false}};
+if(!setWallImg(data)){
 data=compress(800,.55);
-CFG.wallImg=data;
-if(!save()){
-CFG.wallImg=prevImg;CFG.wall=prevWall;applyWall();save();
+if(!setWallImg(data)){
+try{localStorage.setItem("wall_img",prevImg||"")}catch(e){}
+CFG.wall=prevWall;applyWall();save();
 showToast("本地存储空间不足，请换一张更小的图片");
 return;
 }
 }
+CFG.wall="custom";save();
 applyWall();render();showToast("✅ 壁纸已更新");
 }catch(e){
 CFG.wallImg=prevImg;CFG.wall=prevWall;applyWall();
@@ -767,11 +765,6 @@ try{localStorage.setItem("hist",JSON.stringify(H));return true}catch(e){return f
 function saveSrsOnly(){
 window.S=S;
 try{localStorage.setItem("srs",JSON.stringify(S));return true}catch(e){return false}
-}
-// 只写 cfg：高频小改动（滑杆拖动、计划输入）避免连 srs/hist 一起序列化
-function saveCfgOnly(){
-window.CFG=CFG;
-try{localStorage.setItem("cfg",JSON.stringify(CFG));return true}catch(e){return false}
 }
 function save(){
 window.S=S;window.H=H;window.CFG=CFG;
@@ -862,11 +855,12 @@ try{const d=JSON.parse(sessionStorage.getItem("cet6_sess")||"null");if(!d||!Arra
 }
 function showToast(txt){
 const r=document.getElementById("toast-root");if(!r)return;
-const d=document.createElement("div");d.className="toast";d.textContent=txt;
-r.innerHTML="";r.appendChild(d);
+r.innerHTML=`<div class="toast"></div>`;
+if(r.firstChild)r.firstChild.textContent=txt;
 clearTimeout(window.__tt);window.__tt=setTimeout(()=>{r.innerHTML=""},2100);
 }
-const esc=s=>String(s||"").replace(/\\/g,"\\\\").replace(/'/g,"\\'").replace(/\r/g,"\\r").replace(/\n/g,"\\n").replace(/"/g,"&quot;");
+const esc=s=>String(s||"").replace(/\\/g,"\\\\").replace(/'/g,"\\'").replace(/"/g,"&quot;").replace(/\r/g,"\\r").replace(/\n/g,"\\n");
+function shuffle(arr){for(let i=arr.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));const t=arr[i];arr[i]=arr[j];arr[j]=t}return arr}
 const escH=s=>String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
 const escR=s=>String(s||"").replace(/[.*+?^${}()|[\]\\]/g,"\\$&");
 
@@ -961,6 +955,7 @@ function R(id,h){const el=document.getElementById(id);if(el)el.innerHTML=h}
 function render(){
 window.page=page;
 document.body.setAttribute("data-page",page);
+if(page==="set"&&packIsNative()){const st=packStateNow();if(st&&st.state==="downloading")packPollStart()}
 const m=document.getElementById("main");
 const tierName=(TIERS.find(x=>x[0]===tier)||TIERS[0])[1];
 
@@ -1102,23 +1097,12 @@ return;
 
 // 非学习页：计算全局统计与底部导航栏
 const sk=streakDays(),actDays=totalActiveDays(),gapDays=daysSinceLastStudy();
-const todayN=H[today()]||0;
+const todayN=H[today()]||0,totalLearned=WORDS.filter(x=>isLearned(x.w)).length;
 const rawTodaySec=H[today()+"_sec"]||0;
 const todayMin=rawTodaySec>0?Math.max(1,Math.round(rawTodaySec/60)):(todayN>0?Math.max(1,Math.round(todayN*0.25)):0);
-// 单遍扫描汇总全部统计（原先 6 轮全表 .filter()，6081 词每次重绘都扫一遍）
-let totalLearned=0,wrongBookN=0;
-const perTier={};
-for(const x of WORDS){
-const s=S[x.w],learned=isLearnedState(s);
-if(learned)totalLearned++;
-if(s&&(s.star||(learned&&(s.g===0||s.iv===0||((s.wCnt||0)>0&&(s.iv||0)<8)))))wrongBookN++;
-const pt=perTier[x.t]||(perTier[x.t]={fresh:0,due:0,mast:0,highFresh:0});
-if(!learned){pt.fresh++;if((x.imp||2)>=3)pt.highFresh++}
-else{if(s.due<=Date.now())pt.due++;if((s.s||s.iv||0)>=8)pt.mast++}
-}
-const p=pool(tier),ptT=perTier[tier]||{fresh:0,due:0,mast:0,highFresh:0},dueN=ptT.due,freshN=ptT.fresh,mastN=ptT.mast,startedN=p.length-freshN;
-const richNoteCount=p.filter(x=>parseNote(x).hasRich).length;
-const sp=getSmartPlan(tier,ptT);
+const p=pool(tier),dueN=p.filter(x=>isLearned(x.w)&&due(x.w)).length,freshN=p.filter(x=>!isLearned(x.w)).length,mastN=p.filter(x=>mastered(x.w)).length,startedN=p.length-freshN;
+const wrongBookN=WORDS.filter(isWrongOrStar).length,richNoteCount=p.filter(x=>parseNote(x).hasRich).length;
+const sp=getSmartPlan(tier);
 
 const topPill=document.getElementById("top-plan-pill");
 if(topPill)topPill.innerHTML=`${ic("target",14)} 距考 <b>${sp.daysLeft}</b> 天 · ${tierName}`;
@@ -1188,8 +1172,8 @@ ${saved?`<div class="row" style="gap:10px"><button type="button" class="btn f1" 
 </div>
 
 <div class="quote-bar">
-<div id="quote-clip" onclick="playSentence('${esc(qObj.q)}')" style="cursor:pointer" title="点击朗读英文名言"><q>${escH(qObj.q)}</q> — <span>${escH(qObj.a)}</span></div>
-<button type="button" class="icon-btn" style="min-width:34px;min-height:34px" onclick="nextQuote()" aria-label="换一句名言">${ic("refresh",14)}</button>
+<div onclick="playSentence('${esc(qObj.q)}')" style="cursor:pointer" title="点击朗读英文名言"><q>${escH(qObj.q)}</q> — <span>${escH(qObj.a)}</span></div>
+<button type="button" class="icon-btn" style="min-width:34px;min-height:34px" onclick="quoteOffset++;quoteRefresh()" aria-label="换一句名言">${ic("refresh",14)}</button>
 </div>
 </section>
 </div>
@@ -1246,7 +1230,7 @@ m.innerHTML=`<div class="list-toolbar">
 [["tier",`本组 (${tierName})`],["all",`全部 (${WORDS.length})`],["imp3","★★★ 必考"],["due","待复习"],["mastered","已记牢"],["unlearned","未学"]].map(([fk,fl])=>
 `<button type="button" role="tab" aria-selected="${listFilter===fk}" class="filter-btn ${listFilter===fk?'on':''}" onclick="setListFilter('${fk}')">${fl}</button>`
 ).join("")+
-`<button type="button" id="list-sort-btn" class="filter-btn" style="margin-left:auto" onclick="cycleListSort()">排序：${{az:'A-Z',imp:'考频★',wrong:'易错'}[listSort]}</button><span id="list-count" class="xs nw"></span></div></div>
+`<button type="button" class="filter-btn" style="margin-left:auto" onclick="cycleListSort()">排序：${{az:'A-Z',imp:'考频★',wrong:'易错'}[listSort]}</button><span id="list-count" class="xs nw"></span></div></div>
 <div class="vlist-shell">
 <div class="vlist-viewport" id="v-port" onscroll="onVScroll()"><div class="vlist-spacer" id="v-spacer"></div></div>
 <div class="az-bar" role="navigation" aria-label="首字母快速跳转">`+
@@ -1408,8 +1392,8 @@ WALLS.filter(x=>x[0]!=="custom").map(([wid,wn,wbg])=>`<button type="button" clas
 `<button type="button" class="wp-cell ${CFG.wall==='custom'?'on':''}" style="background:var(--surface);color:var(--sub);text-shadow:none" onclick="document.getElementById('wp-file').click()" aria-label="从相册选择壁纸">${ic("image",13)} 相册</button>
 </div>
 <label class="wp-pick">从手机相册选择图片<input type="file" id="wp-file" accept="image/*" onchange="pickWall(this)"></label>
-<div class="wp-range"><span>壁纸强度</span><input type="range" min="0" max="100" value="${Math.round((CFG.wallA??.6)*100)}" oninput="CFG.wallA=this.value/100;applyWall()" onchange="saveCfgOnly()" aria-label="壁纸强度"></div>
-<div class="wp-range"><span>卡片不透明</span><input type="range" min="40" max="100" value="${Math.round((CFG.uiA??.66)*100)}" oninput="CFG._v2ui=1;CFG.uiA=this.value/100;applyWall()" onchange="saveCfgOnly()" aria-label="界面不透明度"></div>
+<div class="wp-range"><span>壁纸强度</span><input type="range" min="0" max="100" value="${Math.round((CFG.wallA??.6)*100)}" oninput="CFG.wallA=this.value/100;applyWall()" onchange="save()" aria-label="壁纸强度"></div>
+<div class="wp-range"><span>卡片不透明</span><input type="range" min="40" max="100" value="${Math.round((CFG.uiA??.66)*100)}" oninput="CFG._v2ui=1;CFG.uiA=this.value/100;applyWall()" onchange="save()" aria-label="界面不透明度"></div>
 </div>
 <div class="set-row">
 <div><div class="set-lbl">明暗主题</div><div class="set-desc">支持跟随系统或手动锁定浅色/深色</div></div>
@@ -1531,10 +1515,7 @@ clearTimeout(searchTimer);searchTimer=setTimeout(()=>rebuildVirtualList(true),11
 function setListFilter(f){listFilter=f;listLetter="";lastListScroll=0;render()}
 function cycleListSort(){
 const od=["az","imp","wrong"];listSort=od[(od.indexOf(listSort)+1)%3];
-rebuildVirtualList(true);
-// 只更新排序按钮文案：原先再调 render() 会把 6081 词重复过滤排序一遍
-const btn=document.getElementById("list-sort-btn");
-if(btn)btn.textContent="排序："+({az:'A-Z',imp:'考频★',wrong:'易错'})[listSort];else render();
+rebuildVirtualList(true);render();
 }
 function jumpLetter(ch){
 listLetter=ch;
@@ -1571,14 +1552,15 @@ const now=Date.now();
 const st=next(S[wKey],0,now);
 st.due=now;
 S[wKey]=st;
-save();closeModal(true);showToast("已加入待复习队列");
+save();closeModal();showToast("已加入待复习队列");
 }
 function markWordMastered(wKey){
 const now=Date.now(),cur=S[wKey];
 S[wKey]={iv:30,e:2.6,ease:2.6,s:30,d:3.5,lr:now,due:now+30*DAY,r:(cur?.r||0)+1,wCnt:cur?.wCnt||0,star:!!cur?.star,g:2};
-save();closeModal(true);showToast("⚡ 已标为熟知记牢");
+save();closeModal();showToast("⚡ 已标为熟知记牢");
 }
 function openWordDetail(wKey,silent=false){
+window.__modalReadonly=true;
 const w=WORD_MAP.get(String(wKey).toLowerCase());if(!w)return;
 const st=S[w.w]||{},pn=parseNote(w);
 if(!silent)play(w.w);
@@ -1815,7 +1797,7 @@ let drillIdx=-1,drillShown=false,drillOrder=[],drillTag="全部",drillRound={ok:
 let drillStats={ok:0,fuzzy:0,bad:0};
 try{drillStats=JSON.parse(localStorage.getItem("dstat"))||{ok:0,fuzzy:0,bad:0}}catch(e){}
 function saveDrillStats(){try{localStorage.setItem("dstat",JSON.stringify(drillStats))}catch(e){}}
-function drillSetTag(t){drillTag=t;drillOrder=shuffle(TRANSLATION_DRILLS.map((_,i)=>i).filter(i=>t==="全部"||TRANSLATION_DRILLS[i].tag===t));drillIdx=0;drillShown=false;drillRound={ok:0,fuzzy:0,bad:0};render()}
+function drillSetTag(t){drillTag=t;drillOrder=TRANSLATION_DRILLS.map((_,i)=>i).filter(i=>t==="全部"||TRANSLATION_DRILLS[i].tag===t);shuffle(drillOrder);drillIdx=0;drillShown=false;drillRound={ok:0,fuzzy:0,bad:0};render()}
 const SENT_PACK_URL="https://github.com/wcx1208/cet6-words/releases/download/v3.4/sentence-voice-pack.zip";
 const SENT_TOTAL=WORDS.length;
 function packIsNative(){return !!(window.AndroidAudio&&window.AndroidAudio.downloadPack)}
@@ -1845,16 +1827,12 @@ else if(st.state==="error"){const t=document.getElementById("pack-txt");if(t)t.t
 }
 },700);
 }
-// 下载进度完全由原生 'packstate' 事件驱动（下载期间另有 700ms 轮询兜底），
-// 原先的常驻 1500ms 轮询已删除：停在设置页不动也会每 1.5s 跨桥调一次 packStatus()
 document.addEventListener("packstate",function(){
 const bar=document.getElementById("pack-bar");if(!bar)return;
 const st=packStateNow();if(!st)return;
-bar.style.width=(st.state==="done"?100:(st.percent<0?8:st.percent))+"%";
+bar.style.width=(st.percent<0?8:st.percent)+"%";
 const t=document.getElementById("pack-txt");
-if(st.state==="downloading"){if(t)t.textContent=(st.percent<0?"下载中…":st.percent+"% · 已解压 "+st.unzip+" 句")}
-else if(st.state==="done"){if(t&&!t.textContent.includes("✅ 全部例句已离线"))t.textContent="✅ 全部例句已离线 · 点右侧可重新下载更新"}
-else if(st.state==="error"){if(t)t.textContent="下载失败："+st.error}
+if(t&&st.state==="downloading")t.textContent=(st.percent<0?"下载中…":st.percent+"% · 已解压 "+st.unzip+" 句");
 });
 function playTts(t){
 stopAudio();
@@ -2043,12 +2021,12 @@ TIERS.map(([k,l,desc])=>{const cnt=pool(k).length,rem=pool(k).filter(x=>!isLearn
 </div>
 <div class="xs" style="margin-bottom:4px">③ 智能推荐每日词量（点按即用）：</div>
 <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
-<button type="button" class="box" style="padding:8px 10px;text-align:left;cursor:pointer;border-color:${CFG.daily===sp.recSafe?'var(--ok)':'var(--brand)'};background:var(--brand-soft)" onclick="CFG.daily=${sp.recSafe};saveCfgOnly();openPlanModal();showToast('已应用稳妥通关方案')">
+<button type="button" class="box" style="padding:8px 10px;text-align:left;cursor:pointer;border-color:${CFG.daily===sp.recSafe?'var(--ok)':'var(--brand)'};background:var(--brand-soft)" onclick="CFG.daily=${sp.recSafe};save();openPlanModal();showToast('已应用稳妥通关方案')">
 <div class="xs" style="color:var(--brand);font-weight:700">${ic("target",12)} 稳妥通关推荐</div>
 <div style="font-size:var(--fs-h2);font-weight:800;margin:2px 0">${sp.recSafe} <small class="xs">词/天</small></div>
 <div class="xs">预留考前 ${sp.bufferDays} 天总复习缓冲</div>
 </button>
-<button type="button" class="box" style="padding:8px 10px;text-align:left;cursor:pointer;border-color:${CFG.daily===sp.recAlt?'var(--accent)':'var(--hairline)'};background:var(--surface)" onclick="CFG.daily=${sp.recAlt};saveCfgOnly();openPlanModal();showToast('已应用备选推荐方案')">
+<button type="button" class="box" style="padding:8px 10px;text-align:left;cursor:pointer;border-color:${CFG.daily===sp.recAlt?'var(--accent)':'var(--hairline)'};background:var(--surface)" onclick="CFG.daily=${sp.recAlt};save();openPlanModal();showToast('已应用备选推荐方案')">
 <div class="xs" style="color:var(--accent);font-weight:700">${ic("bolt",12)} ${sp.altTitle}</div>
 <div style="font-size:var(--fs-h2);font-weight:800;margin:2px 0">${sp.recAlt} <small class="xs">词/天</small></div>
 <div class="xs">${sp.altDesc}</div>
@@ -2056,19 +2034,19 @@ TIERS.map(([k,l,desc])=>{const cnt=pool(k).length,rem=pool(k).filter(x=>!isLearn
 </div>
 <div class="xs" style="margin-bottom:4px">④ 每日新学词数（预设档位或 1~500 自由输入）：</div>
 <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-bottom:6px">`+
-[10,15,20,30,50,80].map(n=>`<button type="button" class="cf-btn tc" style="min-height:38px;padding:2px 0;font-weight:${CFG.daily===n?'700':'500'};border-color:${CFG.daily===n?'var(--accent)':'var(--hairline)'};background:${CFG.daily===n?'var(--accent-soft)':'var(--card)'}" onclick="CFG.daily=${n};saveCfgOnly();openPlanModal()">${n}</button>`).join("")+
+[10,15,20,30,50,80].map(n=>`<button type="button" class="cf-btn tc" style="min-height:38px;padding:2px 0;font-weight:${CFG.daily===n?'700':'500'};border-color:${CFG.daily===n?'var(--accent)':'var(--hairline)'};background:${CFG.daily===n?'var(--accent-soft)':'var(--card)'}" onclick="CFG.daily=${n};save();openPlanModal()">${n}</button>`).join("")+
 `</div>
 <div class="row" style="margin-bottom:8px">
 <button type="button" class="btn subtle sm" style="min-height:40px" onclick="setCustomDaily(CFG.daily-5,false);openPlanModal()">-5 词</button>
 <div class="f1 row" style="background:var(--surface);border:1.5px solid var(--brand);border-radius:10px;padding:0 10px;min-height:40px">
 <span class="xs nw">自定义：</span>
-<input id="modal-custom-daily" type="number" min="1" max="500" value="${CFG.daily}" style="width:100%;border:none;background:transparent;font-size:var(--fs-lg);font-weight:800;text-align:center;outline:none" oninput="const v=Math.min(500,Math.max(1,parseInt(this.value,10)||1));CFG.daily=v;document.getElementById('plan-live-sum').textContent='预计 '+Math.ceil(${sp.freshN}/v)+' 天背完 · 每日约 '+Math.max(2,Math.round(v*0.4))+' 分钟'" onchange="saveCfgOnly()" aria-label="自定义每日新词数">
+<input id="modal-custom-daily" type="number" min="1" max="500" value="${CFG.daily}" style="width:100%;border:none;background:transparent;font-size:var(--fs-lg);font-weight:800;text-align:center;outline:none" onchange="const v=Math.min(500,Math.max(1,parseInt(this.value,10)||1));CFG.daily=v;save();document.getElementById('plan-live-sum').textContent='预计 '+Math.ceil(${sp.freshN}/v)+' 天背完 · 每日约 '+Math.max(2,Math.round(v*0.4))+' 分钟'" aria-label="自定义每日新词数">
 <span class="xs nw">词/天</span>
 </div>
 <button type="button" class="btn subtle sm" style="min-height:40px" onclick="setCustomDaily(CFG.daily+5,false);openPlanModal()">+5 词</button>
 </div>
 <div id="plan-live-sum" class="detail-block tc" style="margin:0 0 10px;padding:6px;font-size:var(--fs-xs);color:var(--ink-2)">预计 ${sp.estDays} 天背完（${sp.finishDateStr}） · 每日约需 ${Math.max(2,Math.round(CFG.daily*0.4))} 分钟</div>
-<button type="button" class="btn" style="min-height:44px" onclick="closeModal(true);showToast('✅ 备考计划已生效')">确认并保存计划</button></div></div>`);
+<button type="button" class="btn" style="min-height:44px" onclick="closeModal();showToast('✅ 备考计划已生效')">确认并保存计划</button></div></div>`);
 }
 
 function copyText(txt,onOk,onFail){
@@ -2135,15 +2113,25 @@ function openResetModal(){
 const learnedCnt=WORDS.filter(x=>isLearned(x.w)).length;
 R("modal-root",`<div class="modal-mask" role="dialog" aria-modal="true" aria-labelledby="modal-title" onclick="closeModal()"><div class="modal-card" onclick="event.stopPropagation()"><h3 id="modal-title" style="margin:0 0 8px;font-size:var(--fs-h2);color:var(--bad)">确认清空所有学习进度？</h3><p style="margin:0 0 20px;color:var(--ink-2)">这将永久删除本机保存的 <b>${learnedCnt}</b> 个已学单词的 FSRS 记忆曲线与打卡历史。建议清空前先导出备份。</p><div class="row" style="gap:12px"><button type="button" class="btn subtle f1" onclick="closeModal()">取消</button><button type="button" class="btn danger f1" onclick="confirmReset()">确认永久清空</button></div></div></div>`);
 }
-function closeModal(refresh){
+function closeModal(){
 R("modal-root","");
-// 仅在底层页面数据变化时才整页重绘：看一眼词卡就关不该重建虚拟列表
-if(refresh)render();
+if(!window.__modalReadonly)render();
+window.__modalReadonly=false;
 }
 window.closeModal=closeModal;
+window.handleAndroidBack=function(){
+try{
+const m=document.getElementById("modal-root");
+if(m&&m.innerHTML.trim()){closeModal();return "nav"}
+if(page==="study"&&typeof finishOrExitStudy==="function"){finishOrExitStudy();return "nav"}
+if(page==="trans"||page==="write"){go("stat");return "nav"}
+if(page!=="home"){go("home");return "nav"}
+}catch(e){}
+return "exit";
+}
 function confirmReset(){
 S={};H={};Q=[];qi=0;doneCnt=0;combo=0;maxCombo=0;sessionWrong=[];historyStack=[];
-sessionStorage.removeItem("cet6_sess");save();closeModal(true);showToast("已清空所有学习记录");
+sessionStorage.removeItem("cet6_sess");save();closeModal();showToast("已清空所有学习记录");
 }
 
 // 跨天温柔衔接：绝不打断正在深夜背词的用户队列
@@ -2162,17 +2150,6 @@ setInterval(checkDay,60000);
 if(document.hidden)document.documentElement.classList.add("bg-paused");
 document.addEventListener("visibilitychange",()=>{document.documentElement.classList.toggle("bg-paused",document.hidden);if(!document.hidden)checkDay()});
 window.addEventListener("resize",()=>{if(page==="list")onVScroll(true)});
-// 安卓返回键统一入口：原生层只调这个函数，页面名/函数名不再硬编码在 Kotlin 里
-window.handleAndroidBack=function(){
-try{
-const m=document.getElementById("modal-root");
-if(m&&m.innerHTML.trim()){closeModal();return "nav"}
-if(typeof page!=="undefined"&&page==="study"&&typeof finishOrExitStudy==="function"){finishOrExitStudy();return "nav"}
-if(typeof page!=="undefined"&&(page==="trans"||page==="write")){go("stat");return "nav"}
-if(typeof page!=="undefined"&&page!=="home"){go("home");return "nav"}
-return "exit"
-}catch(e){return "exit"}
-};
 render();
 if(storageRecovered)setTimeout(()=>showToast("检测到损坏的本地缓存，已自动修复重置"),400);
 </script>
