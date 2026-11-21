@@ -536,39 +536,10 @@ class MainActivity : Activity() {
         /** 注入脚本：离线发音 + 状态栏主题联动 */
         val JS_BRIDGE = """
 (function(){
-  if(window.__nativeBridgeReady) return; window.__nativeBridgeReady = 1;
-  var NA = window.AndroidAudio;
-  function nativePlay(w){ try{ var t=String(w); if(t.length>48) return false; return NA ? !!NA.play(t) : false; }catch(e){ return false; } }
-  // 兜底改走网页的在线 TTS（百度），不再调用系统 TextToSpeech，避免国产 ROM 的 TTS 崩溃
-  function nativeTts(w){ try{ if(window.playTts) return window.playTts(String(w)); }catch(e){} }
-  // 内置真人美音优先，其次在线有道，最后系统 TTS
-  window.play = function(w){
-    if(!w) return;
-    if(nativePlay(w)) return;
-    try{
-      var a = new Audio("https://dict.youdao.com/dictvoice?type=2&audio=" + encodeURIComponent(w));
-      var done = false;
-      var tm = setTimeout(function(){ if(!done){ done = true; nativeTts(w); } }, 1800);
-      a.onended = function(){ done = true; clearTimeout(tm); };
-      a.onerror = function(){ if(!done){ done = true; clearTimeout(tm); nativeTts(w); } };
-      var p = a.play();
-      if(p && p.catch) p.catch(function(){ if(!done){ done = true; clearTimeout(tm); nativeTts(w); } });
-    }catch(e){ nativeTts(w); }
-  };
-  window.tts = function(w){ if(nativePlay(w)) return; nativeTts(w); };
-  // 主题切换 -> 状态栏颜色
-  try{
-    var _apply = window.applyTheme;
-    window.applyTheme = function(t){
-      if(_apply) _apply(t);
-      try{
-        var dark = document.documentElement.classList.contains('dark');
-        if(NA && NA.setDark) NA.setDark(dark);
-      }catch(e){}
-    };
-    if(window.CFG) window.applyTheme(CFG.theme);
-  }catch(e){}
+  // 页面已原生集成 AndroidAudio 并自带 __nativeBridgeReady 防覆盖标志，
+  // 此注入保留为空以兼容旧流程（onPageFinished 会检测标志后跳过）。
 })();
 """
+
     }
 }
