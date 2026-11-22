@@ -8,3 +8,6 @@ web_v3.0.zip
 local.properties
 .gradle/
 app/build/
+keystore.properties
+*.jks
+*.keystore
