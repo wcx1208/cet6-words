@@ -9,11 +9,11 @@
 <meta property="og:description" content="六级600分备考背单词应用：6081词真题语境、FSRS-6间隔重复调度、智能递进与四种学习模式、全例句中文翻译、翻译特训与写作句型库。">
 <style>
 :root{
---bg-rgb:238,242,250;--bg-a:.35;--card-rgb:255,255,255;--card-a:.64;--surf-rgb:244,247,254;--surf-a:.56;
+--bg-rgb:246,247,251;--bg-a:.35;--card-rgb:255,255,255;--card-a:.64;--surf-rgb:244,247,254;--surf-a:.56;
 --bg:rgba(var(--bg-rgb),var(--bg-a));--card:rgba(var(--card-rgb),var(--card-a));--surface:rgba(var(--surf-rgb),var(--surf-a));
 --wall-a:1;--wall-img:radial-gradient(circle at 14% 18%,rgba(99,145,255,.32) 0%,transparent 48%),radial-gradient(circle at 86% 12%,rgba(246,135,179,.28) 0%,transparent 46%),radial-gradient(circle at 80% 82%,rgba(72,219,172,.26) 0%,transparent 52%),radial-gradient(circle at 18% 85%,rgba(163,137,244,.25) 0%,transparent 50%),linear-gradient(145deg,#EBF0FA 0%,#F4EFF8 50%,#EAF4F4 100%);
---ink:#0F1420;--ink-2:#313A4D;--sub:#475269;--line:rgba(255,255,255,.68);--line-strong:rgba(255,255,255,.88);--hairline:rgba(22,34,68,.09);
---brand:#2B5BF2;--brand-2:#547BF8;--brand-soft:rgba(43,91,242,.13);--brand-glow:rgba(43,91,242,.32);
+--ink:#0F172A;--ink-2:#334155;--sub:#52607A;--line:rgba(255,255,255,.68);--line-strong:rgba(255,255,255,.88);--hairline:rgba(22,34,68,.09);
+--brand:#2F5AF0;--brand-2:#547BF8;--brand-soft:rgba(43,91,242,.13);--brand-glow:rgba(43,91,242,.32);
 --accent:#E64866;--accent-soft:rgba(230,72,102,.13);--accent-glow:rgba(230,72,102,.28);
 --ok:#109868;--ok-soft:rgba(16,152,104,.14);--ok-glow:rgba(16,152,104,.30);
 --warn:#D67408;--warn-btn:#C96D06;--warn-soft:rgba(214,116,8,.15);
@@ -32,7 +32,7 @@
 --ease:cubic-bezier(.22,1,.36,1);--dur:220ms;
 }
 html.dark{
---bg-rgb:8,11,19;--bg-a:.42;--card-rgb:20,26,42;--card-a:.58;--surf-rgb:30,39,60;--surf-a:.52;
+--bg-rgb:9,13,22;--bg-a:.42;--card-rgb:18,25,40;--card-a:.58;--surf-rgb:26,35,56;--surf-a:.52;
 --wall-img:radial-gradient(circle at 16% 18%,rgba(59,108,246,.34) 0%,transparent 48%),radial-gradient(circle at 85% 15%,rgba(192,72,230,.24) 0%,transparent 46%),radial-gradient(circle at 78% 84%,rgba(24,186,142,.22) 0%,transparent 52%),radial-gradient(circle at 18% 82%,rgba(74,90,220,.26) 0%,transparent 50%),linear-gradient(145deg,#070A12 0%,#0E1322 52%,#09121C 100%);
 --ink:#F2F5FC;--ink-2:#C6D0E6;--sub:#9BA7C2;--line:rgba(255,255,255,.13);--line-strong:rgba(255,255,255,.24);--hairline:rgba(255,255,255,.09);
 --brand:#6E9BFF;--brand-2:#8BB0FF;--brand-soft:rgba(110,155,255,.18);--brand-glow:rgba(110,155,255,.36);
@@ -73,6 +73,13 @@ button:focus-visible,select:focus-visible,textarea:focus-visible,input:focus-vis
 .nw{white-space:nowrap}
 .ic{width:15px;height:15px;stroke:currentColor;stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0;vertical-align:-2px;display:inline-block}
 .ic-fill{fill:currentColor}
+.pos-tag{display:inline-block;padding:1px 7px;border-radius:7px;font-size:11px;font-weight:800;margin-right:5px;vertical-align:1px;letter-spacing:.02em}
+.pos-v .pos-tag{background:rgba(47,90,240,.14);color:var(--brand)}
+.pos-n .pos-tag{background:rgba(13,148,104,.14);color:#0D9468}
+.pos-adj .pos-tag{background:rgba(217,119,6,.14);color:#D97706}
+.pos-adv .pos-tag{background:rgba(124,92,214,.14);color:#7C5CD6}
+.pos-default .pos-tag{background:var(--brand-soft);color:var(--brand)}
+.num{font-variant-numeric:tabular-nums}
 
 /* 顶部液态玻璃悬浮栏 */
 header.topbar{position:sticky;top:calc(8px + env(safe-area-inset-top));z-index:30;height:54px;margin:calc(8px + env(safe-area-inset-top)) auto 0;padding:0 var(--sp-4);background:var(--glass);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);border:1px solid var(--line-strong);border-radius:20px;box-shadow:var(--shadow);display:flex;align-items:center;justify-content:space-between;max-width:928px;width:calc(100% - 24px);gap:var(--sp-2)}
@@ -371,26 +378,18 @@ nav.botnav{position:fixed;bottom:calc(10px + env(safe-area-inset-bottom));left:5
 <div id="toast-root" aria-live="polite"></div>
 <script src="data.js"></script>
 <script>
-const QUOTES=[
-{"q":"The only people who never fail are those who never try.","a":"Ilka Chase"},
-{"q":"Failure is just another way to learn how to do something right.","a":"Marian Wright Edelman"},
-{"q":"Only those who dare to fail greatly can ever achieve greatly.","a":"John F. Kennedy"},
-{"q":"Imagination is more important than knowledge.","a":"Albert Einstein"},
-{"q":"Hold fast to dreams, for if dreams die, life is a broken winged bird that cannot fly.","a":"Langston Hughes"},
-{"q":"The future belongs to those who believe in the beauty of their dreams.","a":"Eleanor Roosevelt"},
-{"q":"Go confidently in the direction of your dreams.","a":"Henry David Thoreau"},
-{"q":"We can do anything we want to do if we stick to it long enough.","a":"Helen Keller"},
-{"q":"Who looks outside, dreams. Who looks inside, awakes.","a":"Carl Jung"},
-{"q":"Happiness is not a state to arrive at, but a manner of traveling.","a":"Margaret Lee Runbeck"},
-{"q":"We are what we repeatedly do. Excellence, therefore, is not an act but a habit.","a":"Aristotle"},
-{"q":"The best way out is always through.","a":"Robert Frost"}
-];
+const QUOTES=[{"q": "The only people who never fail are those who never try.", "a": "Ilka Chase"}, {"q": "Failure is just another way to learn how to do something right.", "a": "Marian Wright Edelman"}, {"q": "Only those who dare to fail greatly can ever achieve greatly.", "a": "John F. Kennedy"}, {"q": "Imagination is more important than knowledge.", "a": "Albert Einstein"}, {"q": "Hold fast to dreams, for if dreams die, life is a broken winged bird that cannot fly.", "a": "Langston Hughes"}, {"q": "The future belongs to those who believe in the beauty of their dreams.", "a": "Eleanor Roosevelt"}, {"q": "Go confidently in the direction of your dreams.", "a": "Henry David Thoreau"}, {"q": "We can do anything we want to do if we stick to it long enough.", "a": "Helen Keller"}, {"q": "Who looks outside, dreams. Who looks inside, awakes.", "a": "Carl Jung"}, {"q": "Happiness is not a state to arrive at, but a manner of traveling.", "a": "Margaret Lee Runbeck"}, {"q": "We are what we repeatedly do. Excellence, therefore, is not an act but a habit.", "a": "Aristotle"}, {"q": "The best way out is always through.", "a": "Robert Frost"}, {"q": "I failed my way to success.", "a": "Thomas Edison"}, {"q": "Every failure brings with it the seed of an equivalent success.", "a": "Napoleon Hill"}, {"q": "It is hard to fail, but it is worse never to have tried to succeed.", "a": "Theodore Roosevelt"}, {"q": "Go confidently in the direction of your dreams. Live the life you have imagined.", "a": "Henry David Thoreau"}, {"q": "You cannot depend on your eyes when your imagination is out of focus.", "a": "Mark Twain"}, {"q": "Commitment leads to action. Action brings your dream closer.", "a": "Marcia Wieder"}, {"q": "I never think of the future", "a": "it comes soon enough."}, {"q": "Do not anticipate trouble or worry about what may never happen. Keep in the sunlight.", "a": "Benjamin Franklin"}, {"q": "Take time to deliberate; but when the time for action arrives, stop thinking and go in.", "a": "Andrew Jackson"}, {"q": "The mind that is anxious about future events is miserable.", "a": "Seneca"}, {"q": "The art of leadership is saying no, not yes. It is very easy to say yes.", "a": "Tony Blair"}, {"q": "A leader is a dealer in hope.", "a": "Napoleon Bonaparte"}, {"q": "While a good leader sustains momentum, a great leader increases it.", "a": "John C. Maxwell"}, {"q": "A general is just as good or just as bad as the troops under his command make him.", "a": "General Douglas MacArthur"}, {"q": "To do great things is difficult; but to command great things is more difficult.", "a": "Friedrich Nietzsche"}, {"q": "Leadership does not always wear the harness of compromise.", "a": "Woodrow Wilson"}, {"q": "Business opportunities are like buses", "a": "there's always another one coming."}, {"q": "I avoid looking forward or backward, and try to keep looking upward.", "a": "Charlotte Bronte"}, {"q": "Every artist was first an amateur.", "a": "Ralph Waldo Emerson"}, {"q": "Our business in life is not to get ahead of others, but to get ahead of ourselves.", "a": "E. Joseph Cossman"}, {"q": "Insist on yourself. Never imitate.", "a": "Ralph Waldo Emerson"}, {"q": "It is not easy to find happiness in ourselves, and it is not possible to find it elsewhere.", "a": "Agnes Repplier"}, {"q": "The only journey is the one within.", "a": "Rainer Maria Rilke"}, {"q": "Follow your honest convictions, and stay strong.", "a": "William Thackeray"}, {"q": "Action may not always bring happiness; but there is no happiness without action.", "a": "Benjamin Disraeli"}, {"q": "Happiness depends more on the inward disposition of mind than on outward circumstances.", "a": "Benjamin Franklin"}, {"q": "There is no happiness except in the realization that we have accomplished something.", "a": "Henry Ford"}, {"q": "Happiness is not a goal, but a by-product.", "a": "Eleanor Roosevelt"}, {"q": "Purpose is what gives life a meaning.", "a": "C. H. Parkhurst"}, {"q": "The significance of a man is not in what he attains but in what he longs to attain.", "a": "Kahlil Gibran"}, {"q": "In all things that you do, consider the end.", "a": "Solon"}, {"q": "Life can be pulled by goals just as surely as it can be pushed by drives.", "a": "Viktor Frankl"}, {"q": "The virtue lies in the struggle, not in the prize.", "a": "Richard Monckton Milnes"}, {"q": "To reach a port, we must sail", "a": "sail, not tie at anchor"}, {"q": "Success is the child of audacity.", "a": "Benjamin Disraeli"}, {"q": "The secret of success is to know something nobody else knows.", "a": "Aristotle Onassis"}, {"q": "The surest way not to fail is to determine to succeed.", "a": "Richard Brinsley Sheridan"}, {"q": "I cannot give you the formula for success, but I can give you the formula for failure", "a": "which is: Try to please everybody."}, {"q": "Careful thinking and hard work will solve nearly all your problems. Try and see for yourself.", "a": "Ullery"}, {"q": "Years teach us more than books.", "a": "Berthold Auerbach"}, {"q": "The only medicine for suffering, crime, and all the other woes of mankind, is wisdom.", "a": "Thomas Huxley"}, {"q": "The art of being wise is knowing what to overlook.", "a": "William James"}, {"q": "A wise man learns by the mistakes of others, a fool by his own.", "a": "Latin proverb"}, {"q": "No man was ever wise by chance.", "a": "Seneca"}, {"q": "In everything the ends well defined are the secret of durable success.", "a": "Victor Cousins"}, {"q": "Arriving at one goal is the starting point to another.", "a": "John Dewey"}, {"q": "A goal is a dream with a deadline.", "a": "Napoleon Hill"}, {"q": "Goals are the fuel in the furnace of achievement.", "a": "Brian Tracy"}, {"q": "You miss 100 percent of the shots you don't take.", "a": "Wayne Gretzky"}, {"q": "Nothing will ever be attempted if all possible objections must first be overcome.", "a": "Samuel Johnson"}, {"q": "Don't bunt. Aim out of the ballpark.", "a": "David Ogilvy"}, {"q": "Your most unhappy customers are your greatest source of learning.", "a": "Bill Gates, co-founder of Microsoft."}, {"q": "Entrepreneurship is neither a science nor an art. It is a practice.", "a": "Peter Drucker, management consultant, educator, and author."}, {"q": "Success is how high you bounce after you hit bottom.", "a": "General George Patton."}, {"q": "Positive thinking will let you do everything better than negative thinking will.", "a": "Zig Ziglar, author, salesman, and motivational speaker."}, {"q": "Whatever the mind can conceive and believe, the mind can achieve.", "a": "Dr. Napoleon Hill, author of Think and Grow Rich."}, {"q": "If you live for weekends or vacations, your shit is broken", "a": "Gary Vaynerchuk"}, {"q": "Go Big, or Go Home", "a": "Eliza Dushku"}, {"q": "Opportunity is missed by most people because it is dressed in overalls and looks like work", "a": "Thomas Edison"}, {"q": "Have the end in mind and every day make sure your working towards it", "a": "Ryan Allis"}, {"q": "He who begins many things finishes but few", "a": "German Proverb"}, {"q": "The best use of life is to spend it for something that outlasts it", "a": "William James"}, {"q": "If you think education is expensive, try ignorance", "a": "Derek Bok"}, {"q": "To never forget that the most important thing in life is the quality of life we lead", "a": "Quoted by Tony Hsieh on Retireat21"}, {"q": "Its better to own the racecourse then the race horse", "a": "Unknown"}, {"q": "To win without risk is to triumph without glory", "a": "Corneille"}, {"q": "There is only one success", "a": "to be able to spend your life in your own way"}, {"q": "Fall seven times, stand up eight", "a": "Japanese Proverb"}, {"q": "One day your life will flash before your eyes. Make sure it is worth watching", "a": "Mooie"}, {"q": "Whatever the mind can conceive and believe, the mind can achieve", "a": "Dr. Napoleon Hill"}, {"q": "What is not started will never get finished", "a": "Johann Wolfgang von Goethe"}, {"q": "Do not wait to strike until the iron is hot; but make it hot by striking", "a": "William B. Sprague"}, {"q": "When you cease to dream you cease to live", "a": "Malcolm Forbes"}, {"q": "There are two rules for success. 1) Never tell everything you know.", "a": "Roger H. Lincoln"}, {"q": "The only place where success comes before work is in the dictionary.", "a": "Vidal Sassoon"}, {"q": "Being realistic is the most commonly traveled road to mediocrity.", "a": "Will Smith"}, {"q": "Whenever an individual or a business decides that success has been attained, progress stops.", "a": "Thomas J. Watson"}, {"q": "If hard work is the key to success, most people would rather pick the lock.", "a": "Claude McDonald"}, {"q": "Success is simply a matter of luck. Ask any failure.", "a": "Earl Wilson"}, {"q": "The road to success is always under construction.", "a": "Arnold Palmer"}, {"q": "Anything the mind can conceive and believe, it can achieve.", "a": "Napoleon Hill"}, {"q": "Failure defeats losers, failure inspires winners.", "a": "Robert T. Kiyosaki"}, {"q": "The biggest failure you can have in life is not trying at all.", "a": "Emil Motycka"}, {"q": "Leadership is doing what is right when no one is watching.", "a": "George Van Valkenburg"}, {"q": "We are what we repeatedly do. Excellence, then, is not an act, but a habit.", "a": "Aristotle"}, {"q": "Cannibals prefer those who have no spines.", "a": "Stanislaw Lem"}, {"q": "If one does not know to which port one is sailing, no wind is favorable.", "a": "Lucius Annaeus Seneca"}, {"q": "Do not wait to strike until the iron is hot; but make it hot by striking.", "a": "William B. Sprague"}, {"q": "One day your life will flash before your eyes. Make sure it is worth watching.", "a": "Mooie"}, {"q": "I used to sell furniture for a living. The trouble was, it was my own.", "a": "Les Dawson"}, {"q": "Formal education will make you a living. Self education will make you a fortune.", "a": "Jim Rohn"}, {"q": "A business that makes nothing but money is a poor business.", "a": "Henry Ford"}, {"q": "After a certain point, money is meaningless. It ceases to be the goal. The game is what counts.", "a": "Aristotle"}, {"q": "All of my friends were doing babysitting jobs. I wanted money without the job.", "a": "Adam Horwitz"}, {"q": "The secret of getting ahead is getting started.", "a": "Agatha Christie"}, {"q": "Hire character. Train skill.", "a": "Peter Schultz"}, {"q": "One can get anything if he is willing to help enough others get what they want.", "a": "Zig Ziglar"}, {"q": "The true entrepreneur is a doer, not a dreamer.", "a": "Nolan Bushnell"}, {"q": "Everything started as nothing.", "a": "Ben Weissenstein"}, {"q": "Start today, not tomorrow. If anything, you should have started yesterday.", "a": "Emil Motycka"}, {"q": "You should always stay hungry. Stay hungry, so you can eat.", "a": "Syed Balkhi"}, {"q": "Opportunity is missed by most people because it is dressed in overalls and looks like work.", "a": "Thomas Edison"}, {"q": "You must either modify your dreams or magnify your skills.", "a": "Jim Rohn"}, {"q": "Not a single person whose name is worth remembering lived a life of ease.", "a": "Ryan P. Allis"}, {"q": "The best time to plant a tree is twenty years ago. The second best time is now.", "a": "Chinese Proverb"}, {"q": "Vision without action is a daydream. Action without vision is a nightmare.", "a": "Japanese Proverb"}, {"q": "A bad workman blames his tools.", "a": "Chinese Proverb"}, {"q": "A fall into a ditch makes you wiser.", "a": "Chinese Proverb"}, {"q": "The diamond cannot be polished without friction, nor the man perfected without trials.", "a": "Chinese Proverb"}, {"q": "A jade stone is useless before it is processed; a man is good-for-nothing until he is educated.", "a": "Chinese Proverb"}, {"q": "A journey of a thousand miles begins with a single step.", "a": "Chinese Proverb"}, {"q": "The loftiest towers rise from the ground.", "a": "Chinese Proverb"}, {"q": "Building a castle is difficult. Defending and maintaining it is harder still.", "a": "Asian Proverb"}, {"q": "A person who says it cannot be done should not interrupt the man doing it.", "a": "Chinese Proverb"}, {"q": "All cats love fish but fear to wet their paws.", "a": "Chinese Proverb"}, {"q": "Failing to plan is planning to fail.", "a": "Chinese Proverb"}, {"q": "If you pay peanuts, you get monkeys.", "a": "Chinese Proverb"}, {"q": "Make happy those who are near, and those who are far will come.", "a": "Chinese Proverb"}, {"q": "Teachers open the door. You enter by yourself.", "a": "Chinese Proverb"}, {"q": "The entrepreneur builds an enterprise; the technician builds a job.", "a": "Michael Gerber"}, {"q": "If you want to be inventive, you have to be willing to fail.", "a": "Jeff Bezos"}, {"q": "Nine out of ten businesses fail; so I came up with a foolproof plan", "a": "create ten businesses.”"}, {"q": "We make a living by what we get. But we make a life by what we give.", "a": "Winston Churchhill"}, {"q": "Believe that you will succeed", "a": "and you will.”"}, {"q": "Victory comes only after many struggles and countless defeats.", "a": "Og Mandino"}, {"q": "Success is how high you bounce after you hit bottom", "a": "General George Patton"}, {"q": "The critical ingredient is getting off your butt and doing something.", "a": "Nolan Bushnell"}, {"q": "Nothing will work unless you do.", "a": "Maya Angelou"}, {"q": "Try not to be a man of success, but rather try to become a man of value.", "a": "Albert Einstein"}, {"q": "Do or do not. There is no try.", "a": "Yoda"}, {"q": "Show me a person who never made a mistake, and I will show you a person who never did anything.", "a": "William Rosenberg, founder of Dunkin’ Donuts"}, {"q": "Ideas are commodity. Execution of them is not.", "a": "Michael Dell, CEO of Dell"}, {"q": "Be undeniably good. No marketing effort or social media buzzword can be a substitute for that.", "a": "Anthony Volodkin, founder of Hype Machine"}, {"q": "Ideas are easy. Implementation is hard.", "a": "Guy Kawasaki, founder of AllTop"}, {"q": "You can say anything to anyone, but how you say it will determine how they will react.", "a": "John Rampton, entrepreneur and investor"}, {"q": "Always deliver more than expected.", "a": "Larry Page, co-founder of Google"}, {"q": "Assume you have 90 seconds with a new user before they decide to use your app or delete it.", "a": "Tamara Steffens, Acompli"}, {"q": "Stay self-funded as long as possible.", "a": "Garrett Camp, co-founder of Stumbleupon"}, {"q": "In between goals is a thing called life, that has to be lived and enjoyed.", "a": "Sid Caesar, Entertainer"}, {"q": "When times are bad is when the real entrepreneurs emerge.", "a": "Robert Kiyosaki, author of Rich Dad Poor Dad"}, {"q": "How you climb a mountain is more important than reaching the top.", "a": "Yvon Chouinard, founder of Patagonia"}, {"q": "There is only one success- to be able to spend your life in your own way.", "a": "Christopher Morley, journalist"}, {"q": "Formal education will make you a living; self-education will make you a fortune.", "a": "Jim Rohn, author and speaker"}, {"q": "Rarely have I seen a situation where doing less than the other guy is a good strategy.", "a": "Jimmy Spithill, Australian yachtsman"}, {"q": "The best time to plant a tree was 20 years ago. The second best time is now.", "a": "Chinese proverb"}, {"q": "The secret to successful hiring is this: look for the people who want to change the world.", "a": "Marc Benioff, CEO of Salesforce"}, {"q": "Fail often so you can succeed sooner.", "a": "Tom Kelley, Ideo partner"}, {"q": "When you cease to dream you cease to live.", "a": "Malcolm Forbes, chairman and editor in chief of Forbes Magazine"}, {"q": "Running a start-up is like eating glass. You just start to like the taste of your own blood.", "a": "Sean Parker, co-founder of Napster"}, {"q": "My number one piece of advice is: you should learn how to program.", "a": "Mark Zuckerberg, founder of Facebook"}, {"q": "The way to get started is to quit talking and begin doing.", "a": "Walt Disney, co-founder of the Walt Disney Company"}, {"q": "Building and hanging on to an audience is the biggest role of social media.", "a": "Matthew Inman, The Oatmeal"}, {"q": "A poorly implemented feature hurts more than not having it at all.", "a": "Noah Everett, founder of Twitpic"}, {"q": "the entrepreneur always searches for change, responds to it, and exploits it as an opportunity.", "a": "Peter F. Drucker, educator and author"}, {"q": "Risk more than others think is safe. Dream more than others think is practical.", "a": "Howard Schultz, CEO of Starbucks"}, {"q": "If you cannot do great things, do small things in a great way.", "a": "Napoleon Hill, author"}, {"q": "Success is not what you have, but who you are.", "a": "Bo Bennet, author and entreprenuer"}, {"q": "Every time I took these bigger risks, the opportunity for a bigger payout was always there.", "a": "Casey Neistat, filmmaker"}, {"q": "The only limit to our realization of tomorrow will be our doubts of today.", "a": "Franklin D. Roosevelt"}, {"q": "The successful warrior is the average man, with laser-like focus.", "a": "Bruce Lee, actor and martial arts instructor"}, {"q": "Fall seven times and stand up eight.", "a": "Japanese proverb"}, {"q": "It is never too late to be what you might have been.", "a": "George Eliot, journalist and novelist"}, {"q": "I am not a product of my circumstances. I am a product of my decisions.", "a": "Stephen Covey, author and businessman"}, {"q": "There is only one way to avoid criticism: Do nothing, say nothing, and be nothing.", "a": "Aristotle, Greek philosopher"}, {"q": "Build your own dreams, or someone else will hire you to build theirs.", "a": "Farrah Gray, investor and motivational speaker"}, {"q": "When you have a dream, you've got to grab it and never let go.", "a": "Carol Burnett"}];
 let quoteOffset=0;
 function quoteOf(){return QUOTES[(Math.floor(Date.now()/86400000)+quoteOffset)%QUOTES.length]}
 function quoteRefresh(){
-const el=document.getElementById("home-quote");
-if(!el){render();return}
-el.innerHTML=`“${escH(quoteOf().q)}” — ${escH(quoteOf().a)}`;
+const qObj=quoteOf();
+const wrap=document.getElementById("home-quote");
+if(!wrap){render();return}
+wrap.onclick=function(){playSentence(qObj.q)};
+const qEl=wrap.querySelector("q");
+const aEl=wrap.querySelector("span");
+if(qEl)qEl.textContent=qObj.q;
+if(aEl)aEl.textContent=qObj.a;
 }
 
 const TIERS=[["C","核心","高频必考"],["B","基础","稳扎稳打"],["T","拓展","高分进阶"],["J","进阶","拔高冲刺"]],DAY=86400000,MINUTE=60000;
@@ -493,7 +492,7 @@ function defaultExamDate(){
 return "2027-06-13";
 }
 
-var S=safeLoad("srs",{}),H=safeLoad("hist",{}),CFG=Object.assign({daily:20,examDate:defaultExamDate(),auto:false,cloze:true,scenic:true,incBook:true,quizAuto:true,theme:localStorage.getItem("theme")||"auto",wall:"none",wallA:.6,uiA:.66,wallImg:""},safeLoad("cfg",{}));
+var S=safeLoad("srs",{}),H=safeLoad("hist",{}),CFG=Object.assign({daily:20,examDate:defaultExamDate(),auto:false,cloze:true,scenic:true,incBook:true,quizAuto:true,sfx:true,theme:localStorage.getItem("theme")||"auto",wall:"none",wallA:.6,uiA:.66,wallImg:""},safeLoad("cfg",{}));
 if(CFG.uiA===1&&!CFG._v2ui){CFG.uiA=.66;CFG._v2ui=1}
 CFG.daily=Math.min(500,Math.max(1,parseInt(CFG.daily,10)||20));
 if(CFG.examDate==="2026-12-15")CFG.examDate="2027-06-13";
@@ -649,13 +648,13 @@ return {freshN,dueN,highFreshN,daysLeft,bufferDays,recSafe,recAlt,altTitle,altDe
 
 function setCustomDaily(v,toast=true){
 const n=Math.min(500,Math.max(1,Math.round(Number(v)||20)));
-CFG.daily=n;save();
+CFG.daily=n;saveCfgOnly();
 if(toast)showToast(`已设定每日新学：${n} 词/天`);
 render();
 }
 function setExamDate(dStr,inModal=false){
 if(!dStr||!/^\d{4}-\d{2}-\d{2}$/.test(dStr))return;
-CFG.examDate=dStr;save();
+CFG.examDate=dStr;saveCfgOnly();
 const sp=getSmartPlan(tier);
 showToast(`🎯 已设考试日 ${dStr}（距考 ${sp.daysLeft} 天，推荐 ${sp.recSafe} 词/天）`);
 if(inModal)openPlanModal();else render();
@@ -679,8 +678,8 @@ return it[2];
 }
 function applyWall(){
 const r=document.documentElement,bg=wallBg();
-const isCustom=(CFG.wall==="custom"&&!!CFG.wallImg);
-const isDef=(!CFG.wall||CFG.wall==="none"||(CFG.wall==="custom"&&!CFG.wallImg));
+const isCustom=(CFG.wall==="custom"&&!!wallBg());
+const isDef=(!CFG.wall||CFG.wall==="none"||!wallBg());
 r.classList.toggle("wall-custom",isCustom);
 if(isDef)r.style.removeProperty("--wall-img");
 else if(bg)r.style.setProperty("--wall-img",bg);
@@ -765,6 +764,10 @@ try{localStorage.setItem("hist",JSON.stringify(H));return true}catch(e){return f
 function saveSrsOnly(){
 window.S=S;
 try{localStorage.setItem("srs",JSON.stringify(S));return true}catch(e){return false}
+}
+function saveCfgOnly(){
+window.CFG=CFG;
+try{localStorage.setItem("cfg",JSON.stringify(CFG));return true}catch(e){return false}
 }
 function save(){
 window.S=S;window.H=H;window.CFG=CFG;
@@ -853,6 +856,27 @@ try{if(Q.length>0&&qi<Q.length)sessionStorage.setItem("cet6_sess",JSON.stringify
 function loadSavedSession(){
 try{const d=JSON.parse(sessionStorage.getItem("cet6_sess")||"null");if(!d||!Array.isArray(d.words)||!d.words.length||d.qi>=d.words.length)return null;const restored=d.words.map(w=>WORD_MAP.get(w.toLowerCase())).filter(Boolean);const sw=(d.sessionWrong||[]).map(w=>WORD_MAP.get(String(w).toLowerCase())).filter(Boolean);return restored.length?Object.assign(d,{restored,sw}):null}catch(e){return null}
 }
+let __sfxCtx=null;
+function sfx(kind){
+try{
+if(CFG.sfx===false)return;
+if(!__sfxCtx)__sfxCtx=new (window.AudioContext||window.webkitAudioContext)();
+const ctx=__sfxCtx;if(ctx.state==="suspended")ctx.resume();
+const t0=ctx.currentTime;
+const tone=(f,st,dur,vol,type)=>{
+const o=ctx.createOscillator(),g=ctx.createGain();
+o.type=type||"sine";o.frequency.setValueAtTime(f,t0+st);
+g.gain.setValueAtTime(0,t0+st);g.gain.linearRampToValueAtTime(vol,t0+st+.012);
+g.gain.exponentialRampToValueAtTime(.001,t0+st+dur);
+o.connect(g);g.connect(ctx.destination);o.start(t0+st);o.stop(t0+st+dur+.02);
+};
+if(kind==="flip")tone(880,0,.05,.08,"triangle");
+else if(kind==="ok"){tone(660,0,.09,.12);tone(990,.06,.12,.10)}
+else if(kind==="bad"){tone(220,0,.16,.10,"sawtooth")}
+else if(kind==="combo")tone(1320,0,.07,.09,"triangle");
+else if(kind==="done"){[523,659,784,1047].forEach((f,i)=>tone(f,i*.09,.14,.10))}
+}catch(e){}
+}
 function showToast(txt){
 const r=document.getElementById("toast-root");if(!r)return;
 r.innerHTML=`<div class="toast"></div>`;
@@ -862,6 +886,32 @@ clearTimeout(window.__tt);window.__tt=setTimeout(()=>{r.innerHTML=""},2100);
 const esc=s=>String(s||"").replace(/\\/g,"\\\\").replace(/'/g,"\\'").replace(/"/g,"&quot;").replace(/\r/g,"\\r").replace(/\n/g,"\\n");
 function shuffle(arr){for(let i=arr.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));const t=arr[i];arr[i]=arr[j];arr[j]=t}return arr}
 const escH=s=>String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+const POS_COLOR={v:"pos-v",vt:"pos-v",vi:"pos-v",n:"pos-n",adj:"pos-adj",adv:"pos-adv",prep:"pos-n",conj:"pos-adv",num:"pos-adj",pl:"pos-n"};
+function renderMeaning(m){
+const str=String(m||"");if(!str)return"";
+const parts=str.split(/(?=(?:^|\s|[；;，])(?:vt|vi|adj|adv|n|v|prep|conj|num)\.\s*)/i).filter(x=>x.trim());
+if(parts.length<2)return `<span class="pos-default">${escH(str)}</span>`;
+return parts.map(pt=>{
+const mm=pt.match(/^\s*([a-z]+)\.\s*(.*)$/i);
+if(!mm)return `<span>${escH(pt.trim())}</span>`;
+const cls=POS_COLOR[mm[1].toLowerCase()]||"pos-default";
+return `<span class="${cls}" style="white-space:nowrap"><span class="pos-tag">${mm[1].toLowerCase()}.</span>${escH(mm[2].replace(/[；;]$/,"").trim())}</span>`;
+}).join('<span style="color:var(--sub);margin:0 4px">·</span>');
+}
+function spellDiffHTML(target,input){
+const t=String(target||"").toLowerCase(),inp=String(input||"").toLowerCase();
+if(!t)return"";
+const n=t.length,m2=inp.length;
+const dp=Array.from({length:n+1},()=>new Array(m2+1).fill(0));
+for(let a=1;a<=n;a++)for(let b=1;b<=m2;b++)dp[a][b]=t[a-1]===inp[b-1]?dp[a-1][b-1]+1:Math.max(dp[a-1][b],dp[a][b-1]);
+let a=n,b=m2;const ops=[];
+while(a>0||b>0){
+if(a>0&&b>0&&t[a-1]===inp[b-1]){ops.unshift(["ok",t[a-1]]);a--;b--}
+else if(b>0&&(a===0||dp[a][b-1]>=dp[a-1][b])){ops.unshift(["extra",inp[b-1]]);b--}
+else{ops.unshift(["miss",t[a-1]]);a--}
+}
+return ops.map(([k,ch])=>k==="ok"?`<b style="color:var(--ok)">${escH(ch)}</b>`:k==="extra"?`<b style="color:var(--bad);text-decoration:line-through">${escH(ch)}</b>`:`<b style="color:var(--warn-btn);border-bottom:2px solid var(--warn-btn)">${escH(ch)}</b>`).join("");
+}
 const escR=s=>String(s||"").replace(/[.*+?^${}()|[\]\\]/g,"\\$&");
 
 function buildClozeRegex(cl,word){
@@ -1011,7 +1061,7 @@ cardInner=topCardBar+`<div class="w-main">${escH(w.w)}</div>
 <div class="ipa-row">${w.i?`<span class="ipa-txt">${escH(w.i)}</span>`:""}<span class="xs">${w.c||'六级'} ${stars}</span><button type="button" class="audio-pill" onclick="event.stopPropagation();play('${esc(w.w)}')" aria-label="朗读单词">${ic("volume",14)} 发音</button></div>
 ${(!revealed&&CFG.cloze&&w.ex)?`<div class="cloze-preview" onclick="event.stopPropagation();reveal()"><div class="xs" style="margin-bottom:4px;color:var(--brand);font-weight:600">真题语境预热（结合上下文回想词义，点按揭示）：</div><div>${makeCloze(w.ex,w.w,false)}</div></div>`:""}
 ${revealed?`<div class="reveal-zone" onclick="event.stopPropagation()">
-<div class="meaning-box">${escH(w.m)}</div>
+<div class="meaning-box">${renderMeaning(w.m)}</div>
 ${renderStructuredDetails()}
 </div>`:`<button type="button" class="tap-reveal-btn" onclick="event.stopPropagation();reveal()">${ic("eye",16)} 点按卡片或按空格揭示释义</button>`}`;
 bottomBar=renderGrades(!revealed,[
@@ -1046,6 +1096,7 @@ const topPart=curMode==="type"
 cardInner=topCardBar+topPart+`<input id="ti" class="spell-input ${checked?(isRight?'right':'wrong'):''}" placeholder="${curMode==='type'?'输入英文拼写后按回车':'听音输入英文后按回车'}" value="${escH(typed)}" ${checked?'readonly':''} autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="单词拼写输入框">`+
 (checked?`<div class="reveal-zone tc">
 <div class="w-main" style="font-size:28px;color:${isRight?'var(--ok)':'var(--bad)'}">${escH(w.w)} <small class="ipa-txt">${escH(w.i||'')}</small></div>
+${!isRight&&typed?`<div class="xs" style="margin-top:6px">逐字母对比：<span style="font-family:var(--mono);letter-spacing:2px">${spellDiffHTML(w.w,typed)}</span></div>`:""}
 ${!isRight?`<input id="retry-ti" class="spell-input" style="font-size:20px;min-height:46px;margin-top:8px" placeholder="跟打一遍正确拼写，或直接按空格继续…" value="${escH(retryTyped)}" autocomplete="off" autocapitalize="off" spellcheck="false">`:""}
 <div style="text-align:left;margin-top:8px">${renderStructuredDetails()}</div>
 </div>`
@@ -1097,11 +1148,19 @@ return;
 
 // 非学习页：计算全局统计与底部导航栏
 const sk=streakDays(),actDays=totalActiveDays(),gapDays=daysSinceLastStudy();
-const todayN=H[today()]||0,totalLearned=WORDS.filter(x=>isLearned(x.w)).length;
+const todayN=H[today()]||0;
+let totalLearned=0,wrongBookN=0;
+const tier1p={C:{s:0,m:0},B:{s:0,m:0},T:{s:0,m:0},J:{s:0,m:0}};
+for(const x of WORDS){
+const st=S[x.w];
+if(isLearnedState(st)){totalLearned++;if(tier1p[x.t])tier1p[x.t].s++}
+if(st&&mastered(x.w)){if(tier1p[x.t])tier1p[x.t].m++}
+if(isWrongOrStar(x))wrongBookN++;
+}
 const rawTodaySec=H[today()+"_sec"]||0;
 const todayMin=rawTodaySec>0?Math.max(1,Math.round(rawTodaySec/60)):(todayN>0?Math.max(1,Math.round(todayN*0.25)):0);
 const p=pool(tier),dueN=p.filter(x=>isLearned(x.w)&&due(x.w)).length,freshN=p.filter(x=>!isLearned(x.w)).length,mastN=p.filter(x=>mastered(x.w)).length,startedN=p.length-freshN;
-const wrongBookN=WORDS.filter(isWrongOrStar).length,richNoteCount=p.filter(x=>parseNote(x).hasRich).length;
+wrongBookN=WORDS.filter(isWrongOrStar).length,richNoteCount=p.filter(x=>parseNote(x).hasRich).length;
 const sp=getSmartPlan(tier);
 
 const topPill=document.getElementById("top-plan-pill");
@@ -1172,7 +1231,7 @@ ${saved?`<div class="row" style="gap:10px"><button type="button" class="btn f1" 
 </div>
 
 <div class="quote-bar">
-<div onclick="playSentence('${esc(qObj.q)}')" style="cursor:pointer" title="点击朗读英文名言"><q>${escH(qObj.q)}</q> — <span>${escH(qObj.a)}</span></div>
+<div id="home-quote" onclick="playSentence('${esc(qObj.q)}')" style="cursor:pointer" title="点击朗读英文名言"><q>${escH(qObj.q)}</q> — <span>${escH(qObj.a)}</span></div>
 <button type="button" class="icon-btn" style="min-width:34px;min-height:34px" onclick="quoteOffset++;quoteRefresh()" aria-label="换一句名言">${ic("refresh",14)}</button>
 </div>
 </section>
@@ -1230,7 +1289,7 @@ m.innerHTML=`<div class="list-toolbar">
 [["tier",`本组 (${tierName})`],["all",`全部 (${WORDS.length})`],["imp3","★★★ 必考"],["due","待复习"],["mastered","已记牢"],["unlearned","未学"]].map(([fk,fl])=>
 `<button type="button" role="tab" aria-selected="${listFilter===fk}" class="filter-btn ${listFilter===fk?'on':''}" onclick="setListFilter('${fk}')">${fl}</button>`
 ).join("")+
-`<button type="button" class="filter-btn" style="margin-left:auto" onclick="cycleListSort()">排序：${{az:'A-Z',imp:'考频★',wrong:'易错'}[listSort]}</button><span id="list-count" class="xs nw"></span></div></div>
+`<button type="button" class="filter-btn" id="list-sort-btn" style="margin-left:auto" onclick="cycleListSort()">排序：${{az:'A-Z',imp:'考频★',wrong:'易错'}[listSort]}</button><span id="list-count" class="xs nw"></span></div></div>
 <div class="vlist-shell">
 <div class="vlist-viewport" id="v-port" onscroll="onVScroll()"><div class="vlist-spacer" id="v-spacer"></div></div>
 <div class="az-bar" role="navigation" aria-label="首字母快速跳转">`+
@@ -1278,6 +1337,12 @@ m.innerHTML=`<div class="home-layout"><div class="col">
 <div class="rsb" style="background:var(--surface);padding:12px 14px;border-radius:12px;margin-bottom:12px;border:1px solid var(--hairline)">
 <div>
 <div class="xs">当前词汇支撑分预估（基线 345 → 目标 600）</div>
+<svg viewBox="0 0 600 46" style="width:100%;height:46px;display:block;margin:2px 0 6px">
+<line x1="30" y1="26" x2="570" y2="26" stroke="var(--hairline)" stroke-width="6" stroke-linecap="round"/>
+<line x1="30" y1="26" x2="${(30+540*Math.min(1,Math.max(0,(estScore-345)/255))).toFixed(1)}" y2="26" stroke="var(--brand)" stroke-width="6" stroke-linecap="round"/>
+${[[345,"345"],[480,"480"],[550,"550"],[600,"600"]].map(([sv,lb])=>{const x=(30+540*(sv-345)/255).toFixed(1);return `<circle cx="${x}" cy="26" r="4" fill="var(--surf-rgb)" stroke="var(--sub)"/><text x="${x}" y="12" text-anchor="middle" font-size="12" fill="var(--sub)">${lb}</text>`}).join("")}
+<circle cx="${(30+540*Math.min(1,Math.max(0,(estScore-345)/255))).toFixed(1)}" cy="26" r="7" fill="var(--brand)" stroke="#fff" stroke-width="2"/>
+</svg>
 <div class="num-xl" style="color:var(--brand);margin-top:2px">${estScore}<small>分</small> ${scoreGap>0?`<span class="xs" style="color:var(--accent);margin-left:6px">距目标还差约 ${scoreGap} 分</span>`:`<span class="xs" style="color:var(--ok);margin-left:6px">已达 600 分词汇线</span>`}</div>
 </div>
 <button type="button" class="btn sm" onclick="${dueN>0?'startReviewOnly()':'startLearnOnly()'}">${dueN>0?`先清 ${dueN} 到期词`:`攻克核心词`}</button>
@@ -1302,7 +1367,7 @@ PHASE_PLAN.map(([ph,detail],i)=>`<div class="detail-block" style="margin-top:8px
 <path d="${curve} L584,124 L16,124 Z" fill="url(#fsrsArea)"/>
 <path d="${curve}" fill="none" stroke="url(#fsrsLine)" stroke-width="3.5" stroke-linecap="round"/>
 <circle cx="${dotX}" cy="${dotY}" r="6" fill="var(--ok)" stroke="#FFF" stroke-width="2"/>
-</svg>
+<text x="16" y="132" font-size="11" fill="var(--sub)">0d</text><text x="300" y="132" font-size="11" fill="var(--sub)">15d</text><text x="570" y="132" font-size="11" fill="var(--sub)">30d</text><text x="8" y="26" font-size="11" fill="var(--sub)">100%</text><text x="8" y="${(16+(1-0.9)*108+8).toFixed(0)}" font-size="11" fill="var(--sub)">90%</text><text x="8" y="126" font-size="11" fill="var(--sub)">50%</text></svg>
 <div class="rsb xs" style="margin-top:4px">
 <span>横轴 0→30 天 · 虚线为 90% 黄金复习线（当前平均周期 ${avgS.toFixed(1)} 天）</span>
 ${dueN>0?`<button type="button" class="cf-btn" style="min-height:26px;padding:2px 8px" onclick="startReviewOnly()">捞回 ${dueN} 词 ›</button>`:""}
@@ -1312,6 +1377,7 @@ ${dueN>0?`<button type="button" class="cf-btn" style="min-height:26px;padding:2p
 <section class="box">
 <div class="sec-title"><span>近 12 周点亮足迹（共 84 天）</span><span class="sub">累计点亮 ${actDays} 天</span></div>
 <div class="heatmap-wrap"><div class="heatmap-grid">${hmCells.join("")}</div></div>
+<div class="row" style="justify-content:flex-end;gap:4px;margin-top:6px"><span class="xs">少</span><span class="hm-cell" style="opacity:.25"></span><span class="hm-cell" style="opacity:.5"></span><span class="hm-cell" style="opacity:.75"></span><span class="hm-cell"></span><span class="xs">多</span></div>
 <div class="bar-chart">`+
 days7.map((d,idx)=>{
 const c=H[d.toDateString()]||0,hPct=c===0?4:Math.max(10,Math.round((c/max7)*100)),isT=idx===6;
@@ -1392,8 +1458,8 @@ WALLS.filter(x=>x[0]!=="custom").map(([wid,wn,wbg])=>`<button type="button" clas
 `<button type="button" class="wp-cell ${CFG.wall==='custom'?'on':''}" style="background:var(--surface);color:var(--sub);text-shadow:none" onclick="document.getElementById('wp-file').click()" aria-label="从相册选择壁纸">${ic("image",13)} 相册</button>
 </div>
 <label class="wp-pick">从手机相册选择图片<input type="file" id="wp-file" accept="image/*" onchange="pickWall(this)"></label>
-<div class="wp-range"><span>壁纸强度</span><input type="range" min="0" max="100" value="${Math.round((CFG.wallA??.6)*100)}" oninput="CFG.wallA=this.value/100;applyWall()" onchange="save()" aria-label="壁纸强度"></div>
-<div class="wp-range"><span>卡片不透明</span><input type="range" min="40" max="100" value="${Math.round((CFG.uiA??.66)*100)}" oninput="CFG._v2ui=1;CFG.uiA=this.value/100;applyWall()" onchange="save()" aria-label="界面不透明度"></div>
+<div class="wp-range"><span>壁纸强度</span><input type="range" min="0" max="100" value="${Math.round((CFG.wallA??.6)*100)}" oninput="CFG.wallA=this.value/100;applyWall()" onchange="saveCfgOnly()" aria-label="壁纸强度"></div>
+<div class="wp-range"><span>卡片不透明</span><input type="range" min="40" max="100" value="${Math.round((CFG.uiA??.66)*100)}" oninput="CFG._v2ui=1;CFG.uiA=this.value/100;applyWall()" onchange="saveCfgOnly()" aria-label="界面不透明度"></div>
 </div>
 <div class="set-row">
 <div><div class="set-lbl">明暗主题</div><div class="set-desc">支持跟随系统或手动锁定浅色/深色</div></div>
@@ -1402,7 +1468,7 @@ WALLS.filter(x=>x[0]!=="custom").map(([wid,wn,wbg])=>`<button type="button" clas
 `</div></div>
 <div class="set-row">
 <div><div class="set-lbl">书卷柔光主卡</div><div class="set-desc">首页主舞台启用微光渐变质感</div></div>
-<button type="button" role="switch" aria-checked="${!!CFG.scenic}" class="ios-switch" onclick="CFG.scenic=!CFG.scenic;save();render()" aria-label="书卷柔光主卡开关"><span class="ios-track"><span class="ios-thumb"></span></span></button>
+<button type="button" role="switch" aria-checked="${!!CFG.scenic}" class="ios-switch" onclick="CFG.scenic=!CFG.scenic;saveCfgOnly();render()" aria-label="书卷柔光主卡开关"><span class="ios-track"><span class="ios-thumb"></span></span></button>
 </div>
 </section>
 
@@ -1431,11 +1497,15 @@ ${packIsNative()?'<button type="button" class="btn subtle sm" style="min-height:
 </div>
 <div class="set-row">
 <div><div class="set-lbl">混合队列优先穿插错词本</div><div class="set-desc">每日开始学习时优先带入最多 6 个顽固错词/星标词</div></div>
-<button type="button" role="switch" aria-checked="${!!CFG.incBook}" class="ios-switch" onclick="CFG.incBook=!CFG.incBook;save();render()" aria-label="混合队列优先穿插错词本"><span class="ios-track"><span class="ios-thumb"></span></span></button>
+<button type="button" role="switch" aria-checked="${!!CFG.incBook}" class="ios-switch" onclick="CFG.incBook=!CFG.incBook;saveCfgOnly();render()" aria-label="混合队列优先穿插错词本"><span class="ios-track"><span class="ios-thumb"></span></span></button>
+</div>
+<div class="set-row">
+<div><div class="set-lbl">轻快音效</div><div class="set-desc">翻卡与评分的清脆提示音（Web Audio 离线合成，无额外下载）</div></div>
+<button type="button" role="switch" aria-checked="${CFG.sfx!==false}" class="ios-switch" onclick="CFG.sfx=!(CFG.sfx===false);saveCfgOnly();render()" aria-label="轻快音效开关"><span class="ios-track"><span class="ios-thumb"></span></span></button>
 </div>
 <div class="set-row">
 <div><div class="set-lbl">切卡自动发音</div><div class="set-desc">进入新词卡时自动播放美式真人发音</div></div>
-<button type="button" role="switch" aria-checked="${!!CFG.auto}" class="ios-switch" onclick="CFG.auto=!CFG.auto;save();render()" aria-label="切卡自动发音"><span class="ios-track"><span class="ios-thumb"></span></span></button>
+<button type="button" role="switch" aria-checked="${!!CFG.auto}" class="ios-switch" onclick="CFG.auto=!CFG.auto;saveCfgOnly();render()" aria-label="切卡自动发音"><span class="ios-track"><span class="ios-thumb"></span></span></button>
 </div>
 <div class="set-row">
 <div><div class="set-lbl">揭示前真题语境挖空</div><div class="set-desc">先在六级真题原句中猜词义，记忆留存率提升一倍</div></div>
@@ -1515,7 +1585,9 @@ clearTimeout(searchTimer);searchTimer=setTimeout(()=>rebuildVirtualList(true),11
 function setListFilter(f){listFilter=f;listLetter="";lastListScroll=0;render()}
 function cycleListSort(){
 const od=["az","imp","wrong"];listSort=od[(od.indexOf(listSort)+1)%3];
-rebuildVirtualList(true);render();
+rebuildVirtualList(true);
+const b=document.getElementById("list-sort-btn");
+if(b)b.textContent="排序："+({az:"A-Z",imp:"考频★",wrong:"易错"})[listSort];
 }
 function jumpLetter(ch){
 listLetter=ch;
@@ -1552,12 +1624,12 @@ const now=Date.now();
 const st=next(S[wKey],0,now);
 st.due=now;
 S[wKey]=st;
-save();closeModal();showToast("已加入待复习队列");
+save();saveSrsOnly();closeModal(true);showToast("已加入待复习队列");
 }
 function markWordMastered(wKey){
 const now=Date.now(),cur=S[wKey];
 S[wKey]={iv:30,e:2.6,ease:2.6,s:30,d:3.5,lr:now,due:now+30*DAY,r:(cur?.r||0)+1,wCnt:cur?.wCnt||0,star:!!cur?.star,g:2};
-save();closeModal();showToast("⚡ 已标为熟知记牢");
+save();saveSrsOnly();closeModal(true);showToast("⚡ 已标为熟知记牢");
 }
 function openWordDetail(wKey,silent=false){
 window.__modalReadonly=true;
@@ -1568,7 +1640,7 @@ R("modal-root",`<div class="modal-mask" role="dialog" aria-modal="true" onclick=
 <div class="rsb"><span class="xs">${w.c||'六级高频'} · 考频 ${'★'.repeat(w.imp||2)}</span><button type="button" id="modal-star-btn" class="star-btn ${st.star?'on':''}" style="font-size:13px;padding:0 8px;width:auto" onclick="toggleStar('${esc(w.w)}')">${ic("star",15,st.star?"ic-fill":"")} <span>${st.star?'已收藏':'收藏'}</span></button></div>
 <div class="w-main" style="font-size:32px;margin-top:4px">${escH(w.w)}</div>
 <div class="ipa-row" style="margin-bottom:8px;justify-content:flex-start">${w.i?`<span class="ipa-txt">${escH(w.i)}</span>`:""}<button type="button" class="audio-pill" onclick="play('${esc(w.w)}')">${ic("volume",14)} 朗读</button></div>
-<div style="font-size:var(--fs-lg);font-weight:700;margin-bottom:8px">${escH(w.m)}</div>
+<div style="font-size:var(--fs-lg);font-weight:700;margin-bottom:8px">${renderMeaning(w.m)}</div>
 ${w.en?`<div class="detail-block"><span class="tag-lbl">英文释义</span><span style="font-family:var(--serif);font-style:italic">${escH(w.en)}</span></div>`:""}
 ${pn.cols.length?`<div class="detail-block"><span class="tag-lbl col-tag">考场搭配</span>${pn.cols.map(escH).join(" ； ")}</div>`:""}
 ${pn.root?`<div class="detail-block"><span class="tag-lbl">词根助记</span>${escH(pn.root)}</div>`:""}
@@ -1830,9 +1902,21 @@ else if(st.state==="error"){const t=document.getElementById("pack-txt");if(t)t.t
 document.addEventListener("packstate",function(){
 const bar=document.getElementById("pack-bar");if(!bar)return;
 const st=packStateNow();if(!st)return;
+if(st.state==="downloading"){
 bar.style.width=(st.percent<0?8:st.percent)+"%";
 const t=document.getElementById("pack-txt");
-if(t&&st.state==="downloading")t.textContent=(st.percent<0?"下载中…":st.percent+"% · 已解压 "+st.unzip+" 句");
+if(t)t.textContent=(st.percent<0?"下载中…":st.percent+"% · 已解压 "+st.unzip+" 句");
+}else if(st.state==="done"){
+bar.style.width="100%";
+const t=document.getElementById("pack-txt");
+if(t)t.textContent="✅ 全部例句已离线 · 点右侧可重新下载更新";
+if(window.__packTimer){clearInterval(window.__packTimer);window.__packTimer=null}
+}else if(st.state==="error"){
+bar.style.width="0%";
+const t=document.getElementById("pack-txt");
+if(t)t.textContent="下载失败："+(st.error||"请检查网络");
+if(window.__packTimer){clearInterval(window.__packTimer);window.__packTimer=null}
+}
 });
 function playTts(t){
 stopAudio();
@@ -1853,6 +1937,7 @@ if(page!=="study")return;
 const w=Q[qi];if(!w)return;
 historyStack.push({qi,word:w.w,prevS:S[w.w]?Object.assign({},S[w.w]):null,prevCombo:combo,prevMaxCombo:maxCombo,qLen:Q.length,swLen:sessionWrong.length,prevTyped:typed,prevHintLv:hintLv,prevQuizPick:quizPick,prevOpts:w._opts?w._opts.slice():null,prevAns:w._ans,prevRevealed:revealed,prevChecked:checked});
 S[w.w]=next(S[w.w],g);bump(1);doneCnt++;saveSrsOnly();
+if(g===0)sfx("bad");else{sfx("ok");if(combo>0&&combo%5===0)sfx("combo")}
 if(g===0){
 combo=0;sessionWrong.push(w);
 w._opts=null; // 重入队尾时清空旧选项顺序，防止位置记忆盲选
@@ -2113,9 +2198,9 @@ function openResetModal(){
 const learnedCnt=WORDS.filter(x=>isLearned(x.w)).length;
 R("modal-root",`<div class="modal-mask" role="dialog" aria-modal="true" aria-labelledby="modal-title" onclick="closeModal()"><div class="modal-card" onclick="event.stopPropagation()"><h3 id="modal-title" style="margin:0 0 8px;font-size:var(--fs-h2);color:var(--bad)">确认清空所有学习进度？</h3><p style="margin:0 0 20px;color:var(--ink-2)">这将永久删除本机保存的 <b>${learnedCnt}</b> 个已学单词的 FSRS 记忆曲线与打卡历史。建议清空前先导出备份。</p><div class="row" style="gap:12px"><button type="button" class="btn subtle f1" onclick="closeModal()">取消</button><button type="button" class="btn danger f1" onclick="confirmReset()">确认永久清空</button></div></div></div>`);
 }
-function closeModal(){
+function closeModal(refresh){
 R("modal-root","");
-if(!window.__modalReadonly)render();
+if(refresh||!window.__modalReadonly)render();
 window.__modalReadonly=false;
 }
 window.closeModal=closeModal;
@@ -2131,7 +2216,7 @@ return "exit";
 }
 function confirmReset(){
 S={};H={};Q=[];qi=0;doneCnt=0;combo=0;maxCombo=0;sessionWrong=[];historyStack=[];
-sessionStorage.removeItem("cet6_sess");save();closeModal();showToast("已清空所有学习记录");
+sessionStorage.removeItem("cet6_sess");save();saveSrsOnly();closeModal(true);showToast("已清空所有学习记录");
 }
 
 // 跨天温柔衔接：绝不打断正在深夜背词的用户队列
