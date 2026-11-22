@@ -1,3 +1,9 @@
+/**
+ * 【历史归档 - 已冻结】
+ * 本文件属于已废弃的 legacy-compose 版本，不参与当前 Android 构建与运行。
+ * 现役 FSRS-6 算法实现位于 docs/index.html（cet6-review/index.html）。
+ * 仅作历史参考，请勿修改或重新接入构建！
+ */
 package com.wcx.mywords
 
 import kotlin.math.exp

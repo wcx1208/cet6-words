@@ -372,8 +372,8 @@ class MainActivity : Activity() {
     private fun downloadPackAsync(url: String) {
         // 先 CAS 抢占再置状态：旧写法「先查后置」有 TOCTOU，连点两下会起两个线程写坏同一个 zip
         if (!packDownloading.compareAndSet(false, true)) return
-        setPackState("downloading")   // 起任务前同步置位，前端立即有反馈
         packDone = 0; packTotal = -1; packUnzip = 0; packError = ""
+        setPackState("downloading")   // 先清零上一轮计数再置位通知前端，避免读取到残留进度
         bg.execute {
             var conn: HttpURLConnection? = null
             try {

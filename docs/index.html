@@ -342,6 +342,8 @@ nav.botnav{position:fixed;bottom:calc(10px + env(safe-area-inset-bottom));left:5
 .modal-mask{position:fixed;inset:0;z-index:60;background:rgba(8,12,24,.52);display:flex;align-items:center;justify-content:center;padding:calc(var(--sp-4) + env(safe-area-inset-top)) var(--sp-4) calc(var(--sp-4) + env(safe-area-inset-bottom));animation:cardEnter 180ms var(--ease)}
 .modal-card{background:var(--card);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);border:1px solid var(--line-strong);border-radius:26px;padding:var(--sp-5);max-width:440px;width:100%;max-height:88vh;overflow-y:auto;box-shadow:var(--shadow-lg)}
 .toast{position:fixed;top:calc(68px + env(safe-area-inset-top));left:50%;transform:translateX(-50%);z-index:70;background:var(--glass);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);border:1px solid var(--line-strong);color:var(--ink);padding:9px 18px;border-radius:var(--r-pill);font-size:var(--fs-sm);font-weight:700;box-shadow:var(--shadow-lg);pointer-events:none;white-space:nowrap;max-width:calc(100vw - 32px);overflow:hidden;text-overflow:ellipsis}
+.save-fail-bar{position:sticky;top:calc(6px + env(safe-area-inset-top));z-index:55;max-width:928px;width:calc(100% - 24px);margin:8px auto 0;padding:10px 14px;border-radius:16px;background:linear-gradient(135deg,#DC2626 0%,#E11D48 100%);color:#FFF;font-size:var(--fs-sm);font-weight:700;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;box-shadow:0 10px 26px rgba(220,38,38,.36);border:1px solid rgba(255,255,255,.32)}
+.save-fail-bar .sf-btn{min-height:34px;padding:0 12px;border-radius:var(--r-pill);border:1px solid rgba(255,255,255,.72);background:rgba(255,255,255,.18);color:#FFF;font-size:var(--fs-xs);font-weight:700;cursor:pointer;white-space:nowrap}
 .celebrate-orb,.empty-orb{width:64px;height:64px;border-radius:22px;display:inline-flex;align-items:center;justify-content:center;background:var(--brand-soft);border:1px solid var(--line-strong);color:var(--brand);box-shadow:0 8px 24px var(--brand-glow),var(--specular);margin:0 auto}
 .wp-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px}
 .wp-cell{height:46px;border-radius:12px;border:2px solid transparent;cursor:pointer;font-size:11px;font-weight:600;color:#fff;display:flex;align-items:center;justify-content:center;gap:4px;text-shadow:0 1px 4px rgba(0,0,0,.65);background-size:cover;background-position:center;padding:0;box-shadow:var(--specular)}
@@ -366,6 +368,7 @@ nav.botnav{position:fixed;bottom:calc(10px + env(safe-area-inset-bottom));left:5
 <button type="button" class="icon-btn" id="theme-quick" onclick="cycleTheme()" aria-label="切换明暗主题"></button>
 </div>
 </header>
+<div id="save-fail-bar" role="alert" style="display:none"></div>
 <main id="main">
 <div id="skeleton" aria-busy="true" aria-label="正在加载词库">
 <div class="skel" style="height:220px;border-radius:20px;margin-bottom:16px"></div>
@@ -378,7 +381,7 @@ nav.botnav{position:fixed;bottom:calc(10px + env(safe-area-inset-bottom));left:5
 <div id="toast-root" aria-live="polite"></div>
 <script src="data.js"></script>
 <script>
-const QUOTES=[{"q": "The only people who never fail are those who never try.", "a": "Ilka Chase"}, {"q": "Failure is just another way to learn how to do something right.", "a": "Marian Wright Edelman"}, {"q": "Only those who dare to fail greatly can ever achieve greatly.", "a": "John F. Kennedy"}, {"q": "Imagination is more important than knowledge.", "a": "Albert Einstein"}, {"q": "Hold fast to dreams, for if dreams die, life is a broken winged bird that cannot fly.", "a": "Langston Hughes"}, {"q": "The future belongs to those who believe in the beauty of their dreams.", "a": "Eleanor Roosevelt"}, {"q": "Go confidently in the direction of your dreams.", "a": "Henry David Thoreau"}, {"q": "We can do anything we want to do if we stick to it long enough.", "a": "Helen Keller"}, {"q": "Who looks outside, dreams. Who looks inside, awakes.", "a": "Carl Jung"}, {"q": "Happiness is not a state to arrive at, but a manner of traveling.", "a": "Margaret Lee Runbeck"}, {"q": "We are what we repeatedly do. Excellence, therefore, is not an act but a habit.", "a": "Aristotle"}, {"q": "The best way out is always through.", "a": "Robert Frost"}, {"q": "I failed my way to success.", "a": "Thomas Edison"}, {"q": "Every failure brings with it the seed of an equivalent success.", "a": "Napoleon Hill"}, {"q": "It is hard to fail, but it is worse never to have tried to succeed.", "a": "Theodore Roosevelt"}, {"q": "Go confidently in the direction of your dreams. Live the life you have imagined.", "a": "Henry David Thoreau"}, {"q": "You cannot depend on your eyes when your imagination is out of focus.", "a": "Mark Twain"}, {"q": "Commitment leads to action. Action brings your dream closer.", "a": "Marcia Wieder"}, {"q": "I never think of the future", "a": "it comes soon enough."}, {"q": "Do not anticipate trouble or worry about what may never happen. Keep in the sunlight.", "a": "Benjamin Franklin"}, {"q": "Take time to deliberate; but when the time for action arrives, stop thinking and go in.", "a": "Andrew Jackson"}, {"q": "The mind that is anxious about future events is miserable.", "a": "Seneca"}, {"q": "The art of leadership is saying no, not yes. It is very easy to say yes.", "a": "Tony Blair"}, {"q": "A leader is a dealer in hope.", "a": "Napoleon Bonaparte"}, {"q": "While a good leader sustains momentum, a great leader increases it.", "a": "John C. Maxwell"}, {"q": "A general is just as good or just as bad as the troops under his command make him.", "a": "General Douglas MacArthur"}, {"q": "To do great things is difficult; but to command great things is more difficult.", "a": "Friedrich Nietzsche"}, {"q": "Leadership does not always wear the harness of compromise.", "a": "Woodrow Wilson"}, {"q": "Business opportunities are like buses", "a": "there's always another one coming."}, {"q": "I avoid looking forward or backward, and try to keep looking upward.", "a": "Charlotte Bronte"}, {"q": "Every artist was first an amateur.", "a": "Ralph Waldo Emerson"}, {"q": "Our business in life is not to get ahead of others, but to get ahead of ourselves.", "a": "E. Joseph Cossman"}, {"q": "Insist on yourself. Never imitate.", "a": "Ralph Waldo Emerson"}, {"q": "It is not easy to find happiness in ourselves, and it is not possible to find it elsewhere.", "a": "Agnes Repplier"}, {"q": "The only journey is the one within.", "a": "Rainer Maria Rilke"}, {"q": "Follow your honest convictions, and stay strong.", "a": "William Thackeray"}, {"q": "Action may not always bring happiness; but there is no happiness without action.", "a": "Benjamin Disraeli"}, {"q": "Happiness depends more on the inward disposition of mind than on outward circumstances.", "a": "Benjamin Franklin"}, {"q": "There is no happiness except in the realization that we have accomplished something.", "a": "Henry Ford"}, {"q": "Happiness is not a goal, but a by-product.", "a": "Eleanor Roosevelt"}, {"q": "Purpose is what gives life a meaning.", "a": "C. H. Parkhurst"}, {"q": "The significance of a man is not in what he attains but in what he longs to attain.", "a": "Kahlil Gibran"}, {"q": "In all things that you do, consider the end.", "a": "Solon"}, {"q": "Life can be pulled by goals just as surely as it can be pushed by drives.", "a": "Viktor Frankl"}, {"q": "The virtue lies in the struggle, not in the prize.", "a": "Richard Monckton Milnes"}, {"q": "To reach a port, we must sail", "a": "sail, not tie at anchor"}, {"q": "Success is the child of audacity.", "a": "Benjamin Disraeli"}, {"q": "The secret of success is to know something nobody else knows.", "a": "Aristotle Onassis"}, {"q": "The surest way not to fail is to determine to succeed.", "a": "Richard Brinsley Sheridan"}, {"q": "I cannot give you the formula for success, but I can give you the formula for failure", "a": "which is: Try to please everybody."}, {"q": "Careful thinking and hard work will solve nearly all your problems. Try and see for yourself.", "a": "Ullery"}, {"q": "Years teach us more than books.", "a": "Berthold Auerbach"}, {"q": "The only medicine for suffering, crime, and all the other woes of mankind, is wisdom.", "a": "Thomas Huxley"}, {"q": "The art of being wise is knowing what to overlook.", "a": "William James"}, {"q": "A wise man learns by the mistakes of others, a fool by his own.", "a": "Latin proverb"}, {"q": "No man was ever wise by chance.", "a": "Seneca"}, {"q": "In everything the ends well defined are the secret of durable success.", "a": "Victor Cousins"}, {"q": "Arriving at one goal is the starting point to another.", "a": "John Dewey"}, {"q": "A goal is a dream with a deadline.", "a": "Napoleon Hill"}, {"q": "Goals are the fuel in the furnace of achievement.", "a": "Brian Tracy"}, {"q": "You miss 100 percent of the shots you don't take.", "a": "Wayne Gretzky"}, {"q": "Nothing will ever be attempted if all possible objections must first be overcome.", "a": "Samuel Johnson"}, {"q": "Don't bunt. Aim out of the ballpark.", "a": "David Ogilvy"}, {"q": "Your most unhappy customers are your greatest source of learning.", "a": "Bill Gates, co-founder of Microsoft."}, {"q": "Entrepreneurship is neither a science nor an art. It is a practice.", "a": "Peter Drucker, management consultant, educator, and author."}, {"q": "Success is how high you bounce after you hit bottom.", "a": "General George Patton."}, {"q": "Positive thinking will let you do everything better than negative thinking will.", "a": "Zig Ziglar, author, salesman, and motivational speaker."}, {"q": "Whatever the mind can conceive and believe, the mind can achieve.", "a": "Dr. Napoleon Hill, author of Think and Grow Rich."}, {"q": "If you live for weekends or vacations, your shit is broken", "a": "Gary Vaynerchuk"}, {"q": "Go Big, or Go Home", "a": "Eliza Dushku"}, {"q": "Opportunity is missed by most people because it is dressed in overalls and looks like work", "a": "Thomas Edison"}, {"q": "Have the end in mind and every day make sure your working towards it", "a": "Ryan Allis"}, {"q": "He who begins many things finishes but few", "a": "German Proverb"}, {"q": "The best use of life is to spend it for something that outlasts it", "a": "William James"}, {"q": "If you think education is expensive, try ignorance", "a": "Derek Bok"}, {"q": "To never forget that the most important thing in life is the quality of life we lead", "a": "Quoted by Tony Hsieh on Retireat21"}, {"q": "Its better to own the racecourse then the race horse", "a": "Unknown"}, {"q": "To win without risk is to triumph without glory", "a": "Corneille"}, {"q": "There is only one success", "a": "to be able to spend your life in your own way"}, {"q": "Fall seven times, stand up eight", "a": "Japanese Proverb"}, {"q": "One day your life will flash before your eyes. Make sure it is worth watching", "a": "Mooie"}, {"q": "Whatever the mind can conceive and believe, the mind can achieve", "a": "Dr. Napoleon Hill"}, {"q": "What is not started will never get finished", "a": "Johann Wolfgang von Goethe"}, {"q": "Do not wait to strike until the iron is hot; but make it hot by striking", "a": "William B. Sprague"}, {"q": "When you cease to dream you cease to live", "a": "Malcolm Forbes"}, {"q": "There are two rules for success. 1) Never tell everything you know.", "a": "Roger H. Lincoln"}, {"q": "The only place where success comes before work is in the dictionary.", "a": "Vidal Sassoon"}, {"q": "Being realistic is the most commonly traveled road to mediocrity.", "a": "Will Smith"}, {"q": "Whenever an individual or a business decides that success has been attained, progress stops.", "a": "Thomas J. Watson"}, {"q": "If hard work is the key to success, most people would rather pick the lock.", "a": "Claude McDonald"}, {"q": "Success is simply a matter of luck. Ask any failure.", "a": "Earl Wilson"}, {"q": "The road to success is always under construction.", "a": "Arnold Palmer"}, {"q": "Anything the mind can conceive and believe, it can achieve.", "a": "Napoleon Hill"}, {"q": "Failure defeats losers, failure inspires winners.", "a": "Robert T. Kiyosaki"}, {"q": "The biggest failure you can have in life is not trying at all.", "a": "Emil Motycka"}, {"q": "Leadership is doing what is right when no one is watching.", "a": "George Van Valkenburg"}, {"q": "We are what we repeatedly do. Excellence, then, is not an act, but a habit.", "a": "Aristotle"}, {"q": "Cannibals prefer those who have no spines.", "a": "Stanislaw Lem"}, {"q": "If one does not know to which port one is sailing, no wind is favorable.", "a": "Lucius Annaeus Seneca"}, {"q": "Do not wait to strike until the iron is hot; but make it hot by striking.", "a": "William B. Sprague"}, {"q": "One day your life will flash before your eyes. Make sure it is worth watching.", "a": "Mooie"}, {"q": "I used to sell furniture for a living. The trouble was, it was my own.", "a": "Les Dawson"}, {"q": "Formal education will make you a living. Self education will make you a fortune.", "a": "Jim Rohn"}, {"q": "A business that makes nothing but money is a poor business.", "a": "Henry Ford"}, {"q": "After a certain point, money is meaningless. It ceases to be the goal. The game is what counts.", "a": "Aristotle"}, {"q": "All of my friends were doing babysitting jobs. I wanted money without the job.", "a": "Adam Horwitz"}, {"q": "The secret of getting ahead is getting started.", "a": "Agatha Christie"}, {"q": "Hire character. Train skill.", "a": "Peter Schultz"}, {"q": "One can get anything if he is willing to help enough others get what they want.", "a": "Zig Ziglar"}, {"q": "The true entrepreneur is a doer, not a dreamer.", "a": "Nolan Bushnell"}, {"q": "Everything started as nothing.", "a": "Ben Weissenstein"}, {"q": "Start today, not tomorrow. If anything, you should have started yesterday.", "a": "Emil Motycka"}, {"q": "You should always stay hungry. Stay hungry, so you can eat.", "a": "Syed Balkhi"}, {"q": "Opportunity is missed by most people because it is dressed in overalls and looks like work.", "a": "Thomas Edison"}, {"q": "You must either modify your dreams or magnify your skills.", "a": "Jim Rohn"}, {"q": "Not a single person whose name is worth remembering lived a life of ease.", "a": "Ryan P. Allis"}, {"q": "The best time to plant a tree is twenty years ago. The second best time is now.", "a": "Chinese Proverb"}, {"q": "Vision without action is a daydream. Action without vision is a nightmare.", "a": "Japanese Proverb"}, {"q": "A bad workman blames his tools.", "a": "Chinese Proverb"}, {"q": "A fall into a ditch makes you wiser.", "a": "Chinese Proverb"}, {"q": "The diamond cannot be polished without friction, nor the man perfected without trials.", "a": "Chinese Proverb"}, {"q": "A jade stone is useless before it is processed; a man is good-for-nothing until he is educated.", "a": "Chinese Proverb"}, {"q": "A journey of a thousand miles begins with a single step.", "a": "Chinese Proverb"}, {"q": "The loftiest towers rise from the ground.", "a": "Chinese Proverb"}, {"q": "Building a castle is difficult. Defending and maintaining it is harder still.", "a": "Asian Proverb"}, {"q": "A person who says it cannot be done should not interrupt the man doing it.", "a": "Chinese Proverb"}, {"q": "All cats love fish but fear to wet their paws.", "a": "Chinese Proverb"}, {"q": "Failing to plan is planning to fail.", "a": "Chinese Proverb"}, {"q": "If you pay peanuts, you get monkeys.", "a": "Chinese Proverb"}, {"q": "Make happy those who are near, and those who are far will come.", "a": "Chinese Proverb"}, {"q": "Teachers open the door. You enter by yourself.", "a": "Chinese Proverb"}, {"q": "The entrepreneur builds an enterprise; the technician builds a job.", "a": "Michael Gerber"}, {"q": "If you want to be inventive, you have to be willing to fail.", "a": "Jeff Bezos"}, {"q": "Nine out of ten businesses fail; so I came up with a foolproof plan", "a": "create ten businesses.”"}, {"q": "We make a living by what we get. But we make a life by what we give.", "a": "Winston Churchhill"}, {"q": "Believe that you will succeed", "a": "and you will.”"}, {"q": "Victory comes only after many struggles and countless defeats.", "a": "Og Mandino"}, {"q": "Success is how high you bounce after you hit bottom", "a": "General George Patton"}, {"q": "The critical ingredient is getting off your butt and doing something.", "a": "Nolan Bushnell"}, {"q": "Nothing will work unless you do.", "a": "Maya Angelou"}, {"q": "Try not to be a man of success, but rather try to become a man of value.", "a": "Albert Einstein"}, {"q": "Do or do not. There is no try.", "a": "Yoda"}, {"q": "Show me a person who never made a mistake, and I will show you a person who never did anything.", "a": "William Rosenberg, founder of Dunkin’ Donuts"}, {"q": "Ideas are commodity. Execution of them is not.", "a": "Michael Dell, CEO of Dell"}, {"q": "Be undeniably good. No marketing effort or social media buzzword can be a substitute for that.", "a": "Anthony Volodkin, founder of Hype Machine"}, {"q": "Ideas are easy. Implementation is hard.", "a": "Guy Kawasaki, founder of AllTop"}, {"q": "You can say anything to anyone, but how you say it will determine how they will react.", "a": "John Rampton, entrepreneur and investor"}, {"q": "Always deliver more than expected.", "a": "Larry Page, co-founder of Google"}, {"q": "Assume you have 90 seconds with a new user before they decide to use your app or delete it.", "a": "Tamara Steffens, Acompli"}, {"q": "Stay self-funded as long as possible.", "a": "Garrett Camp, co-founder of Stumbleupon"}, {"q": "In between goals is a thing called life, that has to be lived and enjoyed.", "a": "Sid Caesar, Entertainer"}, {"q": "When times are bad is when the real entrepreneurs emerge.", "a": "Robert Kiyosaki, author of Rich Dad Poor Dad"}, {"q": "How you climb a mountain is more important than reaching the top.", "a": "Yvon Chouinard, founder of Patagonia"}, {"q": "There is only one success- to be able to spend your life in your own way.", "a": "Christopher Morley, journalist"}, {"q": "Formal education will make you a living; self-education will make you a fortune.", "a": "Jim Rohn, author and speaker"}, {"q": "Rarely have I seen a situation where doing less than the other guy is a good strategy.", "a": "Jimmy Spithill, Australian yachtsman"}, {"q": "The best time to plant a tree was 20 years ago. The second best time is now.", "a": "Chinese proverb"}, {"q": "The secret to successful hiring is this: look for the people who want to change the world.", "a": "Marc Benioff, CEO of Salesforce"}, {"q": "Fail often so you can succeed sooner.", "a": "Tom Kelley, Ideo partner"}, {"q": "When you cease to dream you cease to live.", "a": "Malcolm Forbes, chairman and editor in chief of Forbes Magazine"}, {"q": "Running a start-up is like eating glass. You just start to like the taste of your own blood.", "a": "Sean Parker, co-founder of Napster"}, {"q": "My number one piece of advice is: you should learn how to program.", "a": "Mark Zuckerberg, founder of Facebook"}, {"q": "The way to get started is to quit talking and begin doing.", "a": "Walt Disney, co-founder of the Walt Disney Company"}, {"q": "Building and hanging on to an audience is the biggest role of social media.", "a": "Matthew Inman, The Oatmeal"}, {"q": "A poorly implemented feature hurts more than not having it at all.", "a": "Noah Everett, founder of Twitpic"}, {"q": "the entrepreneur always searches for change, responds to it, and exploits it as an opportunity.", "a": "Peter F. Drucker, educator and author"}, {"q": "Risk more than others think is safe. Dream more than others think is practical.", "a": "Howard Schultz, CEO of Starbucks"}, {"q": "If you cannot do great things, do small things in a great way.", "a": "Napoleon Hill, author"}, {"q": "Success is not what you have, but who you are.", "a": "Bo Bennet, author and entreprenuer"}, {"q": "Every time I took these bigger risks, the opportunity for a bigger payout was always there.", "a": "Casey Neistat, filmmaker"}, {"q": "The only limit to our realization of tomorrow will be our doubts of today.", "a": "Franklin D. Roosevelt"}, {"q": "The successful warrior is the average man, with laser-like focus.", "a": "Bruce Lee, actor and martial arts instructor"}, {"q": "Fall seven times and stand up eight.", "a": "Japanese proverb"}, {"q": "It is never too late to be what you might have been.", "a": "George Eliot, journalist and novelist"}, {"q": "I am not a product of my circumstances. I am a product of my decisions.", "a": "Stephen Covey, author and businessman"}, {"q": "There is only one way to avoid criticism: Do nothing, say nothing, and be nothing.", "a": "Aristotle, Greek philosopher"}, {"q": "Build your own dreams, or someone else will hire you to build theirs.", "a": "Farrah Gray, investor and motivational speaker"}, {"q": "When you have a dream, you've got to grab it and never let go.", "a": "Carol Burnett"}];
+const QUOTES=[{"q":"The only people who never fail are those who never try.","a":"Ilka Chase"},{"q":"Failure is just another way to learn how to do something right.","a":"Marian Wright Edelman"},{"q":"Only those who dare to fail greatly can ever achieve greatly.","a":"John F. Kennedy"},{"q":"Imagination is more important than knowledge.","a":"Albert Einstein"},{"q":"Hold fast to dreams, for if dreams die, life is a broken-winged bird that cannot fly.","a":"Langston Hughes"},{"q":"The future belongs to those who believe in the beauty of their dreams.","a":"Eleanor Roosevelt"},{"q":"Go confidently in the direction of your dreams.","a":"Henry David Thoreau"},{"q":"We can do anything we want to do if we stick to it long enough.","a":"Helen Keller"},{"q":"Who looks outside, dreams. Who looks inside, awakes.","a":"Carl Jung"},{"q":"Happiness is not a state to arrive at, but a manner of traveling.","a":"Margaret Lee Runbeck"},{"q":"We are what we repeatedly do. Excellence, therefore, is not an act but a habit.","a":"Aristotle"},{"q":"The best way out is always through.","a":"Robert Frost"},{"q":"I failed my way to success.","a":"Thomas Edison"},{"q":"Every failure brings with it the seed of an equivalent success.","a":"Napoleon Hill"},{"q":"It is hard to fail, but it is worse never to have tried to succeed.","a":"Theodore Roosevelt"},{"q":"Success is the sum of small efforts, repeated day in and day out.","a":"Robert Collier"},{"q":"You cannot depend on your eyes when your imagination is out of focus.","a":"Mark Twain"},{"q":"Commitment leads to action. Action brings your dream closer.","a":"Marcia Wieder"},{"q":"I never think of the future — it comes soon enough.","a":"Albert Einstein"},{"q":"Do not anticipate trouble or worry about what may never happen. Keep in the sunlight.","a":"Benjamin Franklin"},{"q":"Take time to deliberate; but when the time for action arrives, stop thinking and go in.","a":"Andrew Jackson"},{"q":"The mind that is anxious about future events is miserable.","a":"Seneca"},{"q":"The art of leadership is saying no, not yes. It is very easy to say yes.","a":"Tony Blair"},{"q":"A leader is a dealer in hope.","a":"Napoleon Bonaparte"},{"q":"While a good leader sustains momentum, a great leader increases it.","a":"John C. Maxwell"},{"q":"A general is just as good or just as bad as the troops under his command make him.","a":"General Douglas MacArthur"},{"q":"To do great things is difficult; but to command great things is more difficult.","a":"Friedrich Nietzsche"},{"q":"Leadership does not always wear the harness of compromise.","a":"Woodrow Wilson"},{"q":"Business opportunities are like buses; there's always another one coming.","a":"Richard Branson"},{"q":"I avoid looking forward or backward, and try to keep looking upward.","a":"Charlotte Bronte"},{"q":"Every artist was first an amateur.","a":"Ralph Waldo Emerson"},{"q":"Our business in life is not to get ahead of others, but to get ahead of ourselves.","a":"E. Joseph Cossman"},{"q":"Insist on yourself. Never imitate.","a":"Ralph Waldo Emerson"},{"q":"It is not easy to find happiness in ourselves, and it is not possible to find it elsewhere.","a":"Agnes Repplier"},{"q":"The only journey is the one within.","a":"Rainer Maria Rilke"},{"q":"Follow your honest convictions, and stay strong.","a":"William Thackeray"},{"q":"Action may not always bring happiness; but there is no happiness without action.","a":"Benjamin Disraeli"},{"q":"Happiness depends more on the inward disposition of mind than on outward circumstances.","a":"Benjamin Franklin"},{"q":"There is no happiness except in the realization that we have accomplished something.","a":"Henry Ford"},{"q":"Happiness is not a goal, but a by-product.","a":"Eleanor Roosevelt"},{"q":"Purpose is what gives life a meaning.","a":"C. H. Parkhurst"},{"q":"The significance of a man is not in what he attains but in what he longs to attain.","a":"Kahlil Gibran"},{"q":"In all things that you do, consider the end.","a":"Solon"},{"q":"Life can be pulled by goals just as surely as it can be pushed by drives.","a":"Viktor Frankl"},{"q":"The virtue lies in the struggle, not in the prize.","a":"Richard Monckton Milnes"},{"q":"To reach a port, we must sail — sail, not tie at anchor — sail, not drift.","a":"Franklin D. Roosevelt"},{"q":"Success is the child of audacity.","a":"Benjamin Disraeli"},{"q":"The secret of success is to know something nobody else knows.","a":"Aristotle Onassis"},{"q":"The surest way not to fail is to determine to succeed.","a":"Richard Brinsley Sheridan"},{"q":"I cannot give you the formula for success, but I can give you the formula for failure: try to please everybody.","a":"Herbert Bayard Swope"},{"q":"Careful thinking and hard work will solve nearly all your problems. Try and see for yourself.","a":"Ullery"},{"q":"Years teach us more than books.","a":"Berthold Auerbach"},{"q":"The only medicine for suffering, crime, and all the other woes of mankind, is wisdom.","a":"Thomas Huxley"},{"q":"The art of being wise is knowing what to overlook.","a":"William James"},{"q":"A wise man learns by the mistakes of others, a fool by his own.","a":"Latin proverb"},{"q":"No man was ever wise by chance.","a":"Seneca"},{"q":"In everything the ends well defined are the secret of durable success.","a":"Victor Cousins"},{"q":"Arriving at one goal is the starting point to another.","a":"John Dewey"},{"q":"A goal is a dream with a deadline.","a":"Napoleon Hill"},{"q":"Goals are the fuel in the furnace of achievement.","a":"Brian Tracy"},{"q":"You miss 100 percent of the shots you don't take.","a":"Wayne Gretzky"},{"q":"Nothing will ever be attempted if all possible objections must first be overcome.","a":"Samuel Johnson"},{"q":"Don't bunt. Aim out of the ballpark.","a":"David Ogilvy"},{"q":"Your most unhappy customers are your greatest source of learning.","a":"Bill Gates"},{"q":"Entrepreneurship is neither a science nor an art. It is a practice.","a":"Peter Drucker"},{"q":"Success is how high you bounce after you hit bottom.","a":"General George Patton"},{"q":"Positive thinking will let you do everything better than negative thinking will.","a":"Zig Ziglar"},{"q":"Whatever the mind can conceive and believe, the mind can achieve.","a":"Napoleon Hill"},{"q":"Live as if you were to die tomorrow. Learn as if you were to live forever.","a":"Mahatma Gandhi"},{"q":"Go big, or go home.","a":"Eliza Dushku"},{"q":"Genius is one percent inspiration and ninety-nine percent perspiration.","a":"Thomas Edison"},{"q":"Have the end in mind and every day make sure you're working towards it.","a":"Ryan Allis"},{"q":"He who begins many things finishes but few.","a":"German Proverb"},{"q":"The best use of life is to spend it for something that outlasts it.","a":"William James"},{"q":"If you think education is expensive, try ignorance.","a":"Derek Bok"},{"q":"Never forget that the most important thing in life is the quality of life we lead.","a":"Tony Hsieh"},{"q":"It's better to own the racecourse than the racehorse.","a":"Unknown"},{"q":"To win without risk is to triumph without glory.","a":"Pierre Corneille"},{"q":"Energy and persistence conquer all things.","a":"Benjamin Franklin"},{"q":"The beautiful thing about learning is that no one can take it away from you.","a":"B. B. King"},{"q":"Well done is better than well said.","a":"Benjamin Franklin"},{"q":"What is not started will never get finished.","a":"Johann Wolfgang von Goethe"},{"q":"Knowledge is power.","a":"Francis Bacon"},{"q":"Education is the kindling of a flame, not the filling of a vessel.","a":"Socrates"},{"q":"There are two rules for success. 1) Never tell everything you know.","a":"Roger H. Lincoln"},{"q":"The only place where success comes before work is in the dictionary.","a":"Vidal Sassoon"},{"q":"Being realistic is the most commonly traveled road to mediocrity.","a":"Will Smith"},{"q":"Whenever an individual or a business decides that success has been attained, progress stops.","a":"Thomas J. Watson"},{"q":"If hard work is the key to success, most people would rather pick the lock.","a":"Claude McDonald"},{"q":"Success is simply a matter of luck. Ask any failure.","a":"Earl Wilson"},{"q":"The road to success is always under construction.","a":"Arnold Palmer"},{"q":"Anything the mind can conceive and believe, it can achieve.","a":"Napoleon Hill"},{"q":"Failure defeats losers, failure inspires winners.","a":"Robert T. Kiyosaki"},{"q":"The biggest failure you can have in life is not trying at all.","a":"Emil Motycka"},{"q":"Leadership is doing what is right when no one is watching.","a":"George Van Valkenburg"},{"q":"Knowing yourself is the beginning of all wisdom.","a":"Aristotle"},{"q":"Cannibals prefer those who have no spines.","a":"Stanislaw Lem"},{"q":"If one does not know to which port one is sailing, no wind is favorable.","a":"Lucius Annaeus Seneca"},{"q":"Do not wait to strike until the iron is hot; but make it hot by striking.","a":"William B. Sprague"},{"q":"One day your life will flash before your eyes. Make sure it is worth watching.","a":"Mooie"},{"q":"I used to sell furniture for a living. The trouble was, it was my own.","a":"Les Dawson"},{"q":"Discipline is the bridge between goals and accomplishment.","a":"Jim Rohn"},{"q":"A business that makes nothing but money is a poor business.","a":"Henry Ford"},{"q":"After a certain point, money is meaningless. It ceases to be the goal. The game is what counts.","a":"Aristotle Onassis"},{"q":"All of my friends were doing babysitting jobs. I wanted money without the job.","a":"Adam Horwitz"},{"q":"The secret of getting ahead is getting started.","a":"Agatha Christie"},{"q":"Hire character. Train skill.","a":"Peter Schultz"},{"q":"One can get anything if he is willing to help enough others get what they want.","a":"Zig Ziglar"},{"q":"The true entrepreneur is a doer, not a dreamer.","a":"Nolan Bushnell"},{"q":"Everything started as nothing.","a":"Ben Weissenstein"},{"q":"Start today, not tomorrow. If anything, you should have started yesterday.","a":"Emil Motycka"},{"q":"You should always stay hungry. Stay hungry, so you can eat.","a":"Syed Balkhi"},{"q":"Opportunity is missed by most people because it is dressed in overalls and looks like work.","a":"Thomas Edison"},{"q":"You must either modify your dreams or magnify your skills.","a":"Jim Rohn"},{"q":"Not a single person whose name is worth remembering lived a life of ease.","a":"Ryan P. Allis"},{"q":"Learning is like rowing upstream: not to advance is to drop back.","a":"Chinese Proverb"},{"q":"Vision without action is a daydream. Action without vision is a nightmare.","a":"Japanese Proverb"},{"q":"A bad workman blames his tools.","a":"Chinese Proverb"},{"q":"A fall into a ditch makes you wiser.","a":"Chinese Proverb"},{"q":"The diamond cannot be polished without friction, nor the man perfected without trials.","a":"Chinese Proverb"},{"q":"A jade stone is useless before it is processed; a man is good-for-nothing until he is educated.","a":"Chinese Proverb"},{"q":"A journey of a thousand miles begins with a single step.","a":"Chinese Proverb"},{"q":"The loftiest towers rise from the ground.","a":"Chinese Proverb"},{"q":"Building a castle is difficult. Defending and maintaining it is harder still.","a":"Asian Proverb"},{"q":"A person who says it cannot be done should not interrupt the man doing it.","a":"Chinese Proverb"},{"q":"All cats love fish but fear to wet their paws.","a":"Chinese Proverb"},{"q":"By failing to prepare, you are preparing to fail.","a":"Benjamin Franklin"},{"q":"He who asks a question is a fool for five minutes; he who does not ask remains a fool forever.","a":"Chinese Proverb"},{"q":"Make happy those who are near, and those who are far will come.","a":"Chinese Proverb"},{"q":"Teachers open the door. You enter by yourself.","a":"Chinese Proverb"},{"q":"The entrepreneur builds an enterprise; the technician builds a job.","a":"Michael Gerber"},{"q":"If you want to be inventive, you have to be willing to fail.","a":"Jeff Bezos"},{"q":"Nine out of ten businesses fail, so I came up with a foolproof plan: create ten businesses.","a":"Robert Kiyosaki"},{"q":"We make a living by what we get, but we make a life by what we give.","a":"Winston Churchill"},{"q":"Believe that you will succeed, and you will.","a":"Dale Carnegie"},{"q":"Victory comes only after many struggles and countless defeats.","a":"Og Mandino"},{"q":"Courage is fear holding on a minute longer.","a":"General George Patton"},{"q":"The critical ingredient is getting up and doing something.","a":"Nolan Bushnell"},{"q":"Nothing will work unless you do.","a":"Maya Angelou"},{"q":"Try not to be a man of success, but rather try to become a man of value.","a":"Albert Einstein"},{"q":"Do or do not. There is no try.","a":"Yoda"},{"q":"Show me a person who never made a mistake, and I will show you a person who never did anything.","a":"William Rosenberg, founder of Dunkin’ Donuts"},{"q":"Ideas are a commodity. Execution of them is not.","a":"Michael Dell, CEO of Dell"},{"q":"Be undeniably good. No marketing effort or social media buzzword can be a substitute for that.","a":"Anthony Volodkin, founder of Hype Machine"},{"q":"Ideas are easy. Implementation is hard.","a":"Guy Kawasaki, founder of AllTop"},{"q":"You can say anything to anyone, but how you say it will determine how they will react.","a":"John Rampton, entrepreneur and investor"},{"q":"Always deliver more than expected.","a":"Larry Page, co-founder of Google"},{"q":"Assume you have 90 seconds with a new user before they decide to use your app or delete it.","a":"Tamara Steffens, Acompli"},{"q":"Stay self-funded as long as possible.","a":"Garrett Camp, co-founder of Stumbleupon"},{"q":"In between goals is a thing called life, that has to be lived and enjoyed.","a":"Sid Caesar, Entertainer"},{"q":"When times are bad is when the real entrepreneurs emerge.","a":"Robert Kiyosaki, author of Rich Dad Poor Dad"},{"q":"How you climb a mountain is more important than reaching the top.","a":"Yvon Chouinard, founder of Patagonia"},{"q":"There is only one success: to be able to spend your life in your own way.","a":"Christopher Morley, journalist"},{"q":"Formal education will make you a living; self-education will make you a fortune.","a":"Jim Rohn, author and speaker"},{"q":"Rarely have I seen a situation where doing less than the other guy is a good strategy.","a":"Jimmy Spithill, Australian yachtsman"},{"q":"The best time to plant a tree was 20 years ago. The second best time is now.","a":"Chinese proverb"},{"q":"The secret to successful hiring is this: look for the people who want to change the world.","a":"Marc Benioff, CEO of Salesforce"},{"q":"Fail often so you can succeed sooner.","a":"Tom Kelley, Ideo partner"},{"q":"When you cease to dream you cease to live.","a":"Malcolm Forbes, chairman and editor in chief of Forbes Magazine"},{"q":"Stay hungry, stay foolish.","a":"Steve Jobs"},{"q":"My number one piece of advice is: you should learn how to program.","a":"Mark Zuckerberg, founder of Facebook"},{"q":"The way to get started is to quit talking and begin doing.","a":"Walt Disney, co-founder of the Walt Disney Company"},{"q":"Building and hanging on to an audience is the biggest role of social media.","a":"Matthew Inman, The Oatmeal"},{"q":"A poorly implemented feature hurts more than not having it at all.","a":"Noah Everett, founder of Twitpic"},{"q":"The entrepreneur always searches for change, responds to it, and exploits it as an opportunity.","a":"Peter F. Drucker, educator and author"},{"q":"Risk more than others think is safe. Dream more than others think is practical.","a":"Howard Schultz, CEO of Starbucks"},{"q":"If you cannot do great things, do small things in a great way.","a":"Napoleon Hill, author"},{"q":"Success is not what you have, but who you are.","a":"Bo Bennett, author and entrepreneur"},{"q":"Every time I took these bigger risks, the opportunity for a bigger payout was always there.","a":"Casey Neistat, filmmaker"},{"q":"The only limit to our realization of tomorrow will be our doubts of today.","a":"Franklin D. Roosevelt"},{"q":"The successful warrior is the average man, with laser-like focus.","a":"Bruce Lee, actor and martial arts instructor"},{"q":"Fall seven times and stand up eight.","a":"Japanese proverb"},{"q":"It is never too late to be what you might have been.","a":"George Eliot, journalist and novelist"},{"q":"I am not a product of my circumstances. I am a product of my decisions.","a":"Stephen Covey, author and businessman"},{"q":"There is only one way to avoid criticism: Do nothing, say nothing, and be nothing.","a":"Aristotle, Greek philosopher"},{"q":"Build your own dreams, or someone else will hire you to build theirs.","a":"Farrah Gray, investor and motivational speaker"},{"q":"When you have a dream, you've got to grab it and never let go.","a":"Carol Burnett"}];
 let quoteOffset=0;
 function quoteOf(){return QUOTES[(Math.floor(Date.now()/86400000)+quoteOffset)%QUOTES.length]}
 function quoteRefresh(){
@@ -480,8 +483,48 @@ POS_BUCKETS[pk].push(w);
 
 let storageRecovered=false;
 function safeLoad(k,d){
-try{const r=localStorage.getItem(k);if(!r)return d;const p=JSON.parse(r);if(typeof p!=="object"||p===null||Array.isArray(p))throw 1;return p}
-catch(e){try{localStorage.removeItem(k)}catch(_){}storageRecovered=true;return d}
+let raw=null;
+try{
+raw=localStorage.getItem(k);
+if(!raw)return d;
+const p=JSON.parse(raw);
+if(typeof p!=="object"||p===null||Array.isArray(p))throw new Error("invalid object");
+return p;
+}catch(e){
+try{localStorage.removeItem(k)}catch(_){}
+if(raw){
+const bkKey=k+"_corrupt_"+Date.now();
+try{localStorage.setItem(bkKey,raw)}catch(_){
+try{
+const oldKeys=[];
+for(let i=0;i<localStorage.length;i++){const lk=localStorage.key(i);if(lk&&lk.startsWith(k+"_corrupt"))oldKeys.push(lk)}
+oldKeys.sort().forEach(ok=>localStorage.removeItem(ok));
+localStorage.setItem(bkKey,raw);
+}catch(_2){}
+}
+}
+storageRecovered=true;
+return d;
+}
+}
+function getCorruptBackups(){
+const list=[];
+try{
+for(let i=0;i<localStorage.length;i++){
+const k=localStorage.key(i);
+if(k&&/_corrupt(?:_\d+)?$/.test(k))list.push({key:k,raw:localStorage.getItem(k)||""});
+}
+}catch(e){}
+list.sort((a,b)=>(a.key<b.key?1:-1));
+return list;
+}
+function exportCorruptBackup(){
+const list=getCorruptBackups();
+if(!list.length){showToast("暂无损坏缓存备份");return}
+const payload=JSON.stringify(Object.fromEntries(list.map(x=>[x.key,x.raw])));
+const setImp=()=>{const el=document.getElementById("imp");if(el)el.value=payload};
+setImp();
+copyText(payload,()=>{msg="⚠️ 已导出原始损坏缓存副本到剪贴板及上方文本框，请妥善保存用于恢复";showToast("已导出原始损坏缓存副本");render();setImp()},()=>{msg="⚠️ 损坏缓存副本已显示在上方文本框中，请全选复制保存";render();setImp()});
 }
 function nextMonthDayDate(month,day){
 const now=new Date(),y=now.getFullYear(),m=now.getMonth()+1,d=now.getDate();
@@ -492,13 +535,15 @@ function defaultExamDate(){
 return "2027-06-13";
 }
 
-var S=safeLoad("srs",{}),H=safeLoad("hist",{}),CFG=Object.assign({daily:20,examDate:defaultExamDate(),auto:false,cloze:true,scenic:true,incBook:true,quizAuto:true,sfx:true,theme:localStorage.getItem("theme")||"auto",wall:"none",wallA:.6,uiA:.66,wallImg:""},safeLoad("cfg",{}));
+var S=safeLoad("srs",{}),H=safeLoad("hist",{}),CFG=Object.assign({daily:20,examDate:defaultExamDate(),auto:false,cloze:true,scenic:true,incBook:true,quizAuto:true,sfx:true,onlineAudio:true,theme:localStorage.getItem("theme")||"auto",wall:"none",wallA:.6,uiA:.66},safeLoad("cfg",{}));
 if(CFG.uiA===1&&!CFG._v2ui){CFG.uiA=.66;CFG._v2ui=1}
 CFG.daily=Math.min(500,Math.max(1,parseInt(CFG.daily,10)||20));
 if(CFG.examDate==="2026-12-15")CFG.examDate="2027-06-13";
-try{
-if(CFG.wallImg){localStorage.setItem("wall_img",CFG.wallImg);delete CFG.wallImg;save()}
-}catch(e){}
+if("wallImg" in CFG){
+try{if(CFG.wallImg&&!localStorage.getItem("wall_img"))localStorage.setItem("wall_img",CFG.wallImg)}catch(e){}
+delete CFG.wallImg;
+try{localStorage.setItem("cfg",JSON.stringify(CFG))}catch(e){}
+}
 if(!CFG.examDate||!/^\d{4}-\d{2}-\d{2}$/.test(CFG.examDate))CFG.examDate=defaultExamDate();
 var tier=localStorage.getItem("tier")||"C";if(!TIERS.some(x=>x[0]===tier))tier="C";
 var mode=localStorage.getItem("mode")||"smart";if(!["smart","card","quiz","type","dict"].includes(mode))mode="smart";
@@ -508,9 +553,11 @@ var page="home";
 function sanitizeState(){
 CFG.daily=Math.min(500,Math.max(1,parseInt(CFG.daily,10)||20));
 if(CFG.examDate==="2026-12-15")CFG.examDate="2027-06-13";
-try{
-if(CFG.wallImg){localStorage.setItem("wall_img",CFG.wallImg);delete CFG.wallImg;save()}
-}catch(e){}
+CFG.onlineAudio=CFG.onlineAudio!==false;
+if("wallImg" in CFG){
+try{if(CFG.wallImg&&!localStorage.getItem("wall_img"))localStorage.setItem("wall_img",CFG.wallImg)}catch(e){}
+delete CFG.wallImg;
+}
 if(!CFG.examDate||!/^\d{4}-\d{2}-\d{2}$/.test(CFG.examDate))CFG.examDate=defaultExamDate();
 for(const k in S){
 const st=S[k];
@@ -595,16 +642,15 @@ diff=Math.round(clamp(diff,1,10)*100)/100;
 let iv=0;
 if(rating===1){iv=0}
 else if(!learned){
-iv=rating===2?1:(rating===3?3:7);
-stab=Math.max(stab,iv);
+iv=clamp(rating===2?1:(rating===3?3:7),0,180);
+stab=Math.min(365,Math.max(stab,iv));
 }else{
 const rawIv=fsrsInterval(stab);
-const hardIv=Math.max(1,Math.min(rawIv,Math.round((s.iv||1)*1.25)));
-if(rating===2)iv=hardIv;
-else if(rating===3){iv=Math.max(1,hardIv,rawIv);stab=Math.max(stab,iv)}
-else{iv=Math.max(4,(s.iv||1)+3,hardIv+2,Math.round(rawIv*1.3));stab=Math.max(stab,iv)}
+const hardIv=Math.max(2,Math.min(Math.max(1,rawIv),Math.ceil((s.iv||1)*1.25)));
+if(rating===2)iv=clamp(hardIv,0,180);
+else if(rating===3){iv=clamp(Math.max(1,hardIv,rawIv),0,180);stab=Math.min(365,Math.max(stab,iv))}
+else{const easyCap=Math.max(7,Math.round((s.iv||1)*3.5));iv=clamp(Math.min(easyCap,Math.max(4,(s.iv||1)+3,hardIv+2,Math.round(rawIv*1.3))),0,180);stab=Math.min(365,Math.max(stab,iv))}
 }
-iv=clamp(iv,0,180);
 const e=Math.round(clamp(3-(diff-1)/9*1.7,1.3,3)*100)/100;
 const dueTime=rating===1?(nowMs+10*MINUTE):(nowMs+iv*DAY);
 return{
@@ -678,11 +724,11 @@ return it[2];
 }
 function applyWall(){
 const r=document.documentElement,bg=wallBg();
-const isCustom=(CFG.wall==="custom"&&!!wallBg());
-const isDef=(!CFG.wall||CFG.wall==="none"||!wallBg());
+const isCustom=(CFG.wall==="custom"&&!!bg);
+const isDef=(!CFG.wall||CFG.wall==="none"||!bg);
 r.classList.toggle("wall-custom",isCustom);
 if(isDef)r.style.removeProperty("--wall-img");
-else if(bg)r.style.setProperty("--wall-img",bg);
+else r.style.setProperty("--wall-img",bg);
 const wa=isDef?1:Math.min(1,Math.max(0,Number(CFG.wallA??.75)));
 r.style.setProperty("--wall-a",String(wa));
 const minUi=isCustom?.72:.42;
@@ -692,7 +738,7 @@ r.style.setProperty("--card-a",String(ui));
 r.style.setProperty("--surf-a",String(Math.max(.42,ui-.08)));
 r.style.setProperty("--bg-a",String(Math.min(.75,.28+.3*ui)));
 }
-function setWall(id){CFG.wall=id;save();applyWall();render()}
+function setWall(id){CFG.wall=id;saveCfgOnly();applyWall();render()}
 function pickWall(inp){
 const f=inp.files&&inp.files[0];
 inp.value="";
@@ -702,6 +748,7 @@ rd.onload=()=>{
 const img=new Image();
 img.onload=()=>{
 const prevImg=localStorage.getItem("wall_img")||"",prevWall=CFG.wall;
+const restorePrevImg=()=>{try{if(prevImg)localStorage.setItem("wall_img",prevImg);else localStorage.removeItem("wall_img")}catch(_){}};
 const compress=(maxSide,q)=>{
 const sc=Math.min(1,maxSide/Math.max(img.width,img.height));
 const c=document.createElement("canvas");
@@ -716,16 +763,17 @@ const setWallImg=(d)=>{try{localStorage.setItem("wall_img",d);return localStorag
 if(!setWallImg(data)){
 data=compress(800,.55);
 if(!setWallImg(data)){
-try{localStorage.setItem("wall_img",prevImg||"")}catch(e){}
-CFG.wall=prevWall;applyWall();save();
+restorePrevImg();
+CFG.wall=prevWall;delete CFG.wallImg;applyWall();saveCfgOnly();
 showToast("本地存储空间不足，请换一张更小的图片");
 return;
 }
 }
-CFG.wall="custom";save();
+CFG.wall="custom";delete CFG.wallImg;saveCfgOnly();
 applyWall();render();showToast("✅ 壁纸已更新");
 }catch(e){
-CFG.wallImg=prevImg;CFG.wall=prevWall;applyWall();
+restorePrevImg();
+CFG.wall=prevWall;delete CFG.wallImg;applyWall();
 showToast("图片过大，请换一张");
 }
 };
@@ -757,21 +805,44 @@ applyTheme(nx);save();showToast({auto:"已切换为：跟随系统",light:"已�
 if(page==="set")render();
 }
 
+var saveFailed=false;
+const saveFailKeys={srs:false,hist:false,cfg:false};
+function updateSaveBanner(){
+saveFailed=!!(saveFailKeys.srs||saveFailKeys.hist||saveFailKeys.cfg);
+window.saveFailed=saveFailed;
+const bar=document.getElementById("save-fail-bar");
+if(!bar)return;
+if(!saveFailed){bar.style.display="none";bar.innerHTML="";return}
+bar.style.display="";
+bar.innerHTML=`<div class="save-fail-bar"><span>⚠️ 本地存储空间已满，最新学习进度未能落盘保存！请清理相册壁纸或立即导出备份。</span><button type="button" class="sf-btn" onclick="exportBackupNow()">立即导出备份</button></div>`;
+}
+function exportBackupNow(){
+if(page!=="set"){page="set";window.page="set";render()}
+exportP();
+}
 function saveHistOnly(){
 window.H=H;
-try{localStorage.setItem("hist",JSON.stringify(H));return true}catch(e){return false}
+try{localStorage.setItem("hist",JSON.stringify(H));saveFailKeys.hist=false;updateSaveBanner();return true}
+catch(e){saveFailKeys.hist=true;updateSaveBanner();return false}
 }
 function saveSrsOnly(){
 window.S=S;
-try{localStorage.setItem("srs",JSON.stringify(S));return true}catch(e){return false}
+try{localStorage.setItem("srs",JSON.stringify(S));saveFailKeys.srs=false;updateSaveBanner();return true}
+catch(e){saveFailKeys.srs=true;updateSaveBanner();return false}
 }
 function saveCfgOnly(){
 window.CFG=CFG;
-try{localStorage.setItem("cfg",JSON.stringify(CFG));return true}catch(e){return false}
+try{localStorage.setItem("cfg",JSON.stringify(CFG));saveFailKeys.cfg=false;updateSaveBanner();return true}
+catch(e){saveFailKeys.cfg=true;updateSaveBanner();return false}
 }
 function save(){
 window.S=S;window.H=H;window.CFG=CFG;
-try{localStorage.setItem("srs",JSON.stringify(S));localStorage.setItem("hist",JSON.stringify(H));localStorage.setItem("cfg",JSON.stringify(CFG));return true}catch(e){return false}
+let ok=true;
+try{localStorage.setItem("srs",JSON.stringify(S));saveFailKeys.srs=false}catch(e){saveFailKeys.srs=true;ok=false}
+try{localStorage.setItem("hist",JSON.stringify(H));saveFailKeys.hist=false}catch(e){saveFailKeys.hist=true;ok=false}
+try{localStorage.setItem("cfg",JSON.stringify(CFG));saveFailKeys.cfg=false}catch(e){saveFailKeys.cfg=true;ok=false}
+updateSaveBanner();
+return ok;
 }
 const today=()=>new Date().toDateString();
 function bump(delta=1){
@@ -889,17 +960,17 @@ const escH=s=>String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/
 const POS_COLOR={v:"pos-v",vt:"pos-v",vi:"pos-v",n:"pos-n",adj:"pos-adj",adv:"pos-adv",prep:"pos-n",conj:"pos-adv",num:"pos-adj",pl:"pos-n"};
 function renderMeaning(m){
 const str=String(m||"");if(!str)return"";
-const parts=str.split(/(?=(?:^|\s|[；;，])(?:vt|vi|adj|adv|n|v|prep|conj|num)\.\s*)/i).filter(x=>x.trim());
+const parts=str.split(/(?:^|\s*[；;，]\s*|\s+)(?=(?:vt|vi|adj|adv|n|v|prep|conj|num)\.\s*)/i).filter(x=>x.trim());
 if(parts.length<2)return `<span class="pos-default">${escH(str)}</span>`;
 return parts.map(pt=>{
 const mm=pt.match(/^\s*([a-z]+)\.\s*(.*)$/i);
 if(!mm)return `<span>${escH(pt.trim())}</span>`;
 const cls=POS_COLOR[mm[1].toLowerCase()]||"pos-default";
-return `<span class="${cls}" style="white-space:nowrap"><span class="pos-tag">${mm[1].toLowerCase()}.</span>${escH(mm[2].replace(/[；;]$/,"").trim())}</span>`;
+return `<span class="${cls}"><span class="pos-tag">${mm[1].toLowerCase()}.</span>${escH(mm[2].replace(/[；;]$/,"").trim())}</span>`;
 }).join('<span style="color:var(--sub);margin:0 4px">·</span>');
 }
 function spellDiffHTML(target,input){
-const t=String(target||"").toLowerCase(),inp=String(input||"").toLowerCase();
+const t=String(target||"").toLowerCase(),inp=String(input||"").slice(0,80).toLowerCase();
 if(!t)return"";
 const n=t.length,m2=inp.length;
 const dp=Array.from({length:n+1},()=>new Array(m2+1).fill(0));
@@ -1334,13 +1405,13 @@ const days7=[...Array(7)].map((_,i)=>{const d=new Date();d.setDate(d.getDate()-6
 m.innerHTML=`<div class="home-layout"><div class="col">
 <section class="box">
 <div class="sec-title"><span class="row" style="gap:6px">${ic("target",16)}<span>六级 600 分词汇战力诊断</span></span><button type="button" class="pill-action" onclick="openShareModal()">晒成绩单</button></div>
-<div class="rsb" style="background:var(--surface);padding:12px 14px;border-radius:12px;margin-bottom:12px;border:1px solid var(--hairline)">
-<div>
+<div class="rsb" style="flex-wrap:wrap;background:var(--surface);padding:12px 14px;border-radius:12px;margin-bottom:12px;border:1px solid var(--hairline)">
+<div style="flex:1;min-width:200px">
 <div class="xs">当前词汇支撑分预估（基线 345 → 目标 600）</div>
 <svg viewBox="0 0 600 46" style="width:100%;height:46px;display:block;margin:2px 0 6px">
 <line x1="30" y1="26" x2="570" y2="26" stroke="var(--hairline)" stroke-width="6" stroke-linecap="round"/>
 <line x1="30" y1="26" x2="${(30+540*Math.min(1,Math.max(0,(estScore-345)/255))).toFixed(1)}" y2="26" stroke="var(--brand)" stroke-width="6" stroke-linecap="round"/>
-${[[345,"345"],[480,"480"],[550,"550"],[600,"600"]].map(([sv,lb])=>{const x=(30+540*(sv-345)/255).toFixed(1);return `<circle cx="${x}" cy="26" r="4" fill="var(--surf-rgb)" stroke="var(--sub)"/><text x="${x}" y="12" text-anchor="middle" font-size="12" fill="var(--sub)">${lb}</text>`}).join("")}
+${[[345,"345"],[480,"480"],[550,"550"],[600,"600"]].map(([sv,lb])=>{const x=(30+540*(sv-345)/255).toFixed(1);return `<circle cx="${x}" cy="26" r="4" fill="rgb(var(--surf-rgb))" stroke="var(--sub)"/><text x="${x}" y="12" text-anchor="middle" font-size="12" fill="var(--sub)">${lb}</text>`}).join("")}
 <circle cx="${(30+540*Math.min(1,Math.max(0,(estScore-345)/255))).toFixed(1)}" cy="26" r="7" fill="var(--brand)" stroke="#fff" stroke-width="2"/>
 </svg>
 <div class="num-xl" style="color:var(--brand);margin-top:2px">${estScore}<small>分</small> ${scoreGap>0?`<span class="xs" style="color:var(--accent);margin-left:6px">距目标还差约 ${scoreGap} 分</span>`:`<span class="xs" style="color:var(--ok);margin-left:6px">已达 600 分词汇线</span>`}</div>
@@ -1367,7 +1438,7 @@ PHASE_PLAN.map(([ph,detail],i)=>`<div class="detail-block" style="margin-top:8px
 <path d="${curve} L584,124 L16,124 Z" fill="url(#fsrsArea)"/>
 <path d="${curve}" fill="none" stroke="url(#fsrsLine)" stroke-width="3.5" stroke-linecap="round"/>
 <circle cx="${dotX}" cy="${dotY}" r="6" fill="var(--ok)" stroke="#FFF" stroke-width="2"/>
-<text x="16" y="132" font-size="11" fill="var(--sub)">0d</text><text x="300" y="132" font-size="11" fill="var(--sub)">15d</text><text x="570" y="132" font-size="11" fill="var(--sub)">30d</text><text x="8" y="26" font-size="11" fill="var(--sub)">100%</text><text x="8" y="${(16+(1-0.9)*108+8).toFixed(0)}" font-size="11" fill="var(--sub)">90%</text><text x="8" y="126" font-size="11" fill="var(--sub)">50%</text></svg>
+<text x="16" y="132" font-size="11" fill="var(--sub)">0d</text><text x="300" y="132" font-size="11" fill="var(--sub)">15d</text><text x="570" y="132" font-size="11" fill="var(--sub)">30d</text><text x="18" y="14" font-size="11" fill="var(--sub)">100%</text><text x="18" y="38" font-size="11" fill="var(--sub)">90%</text><text x="18" y="68" font-size="11" fill="var(--sub)">50%</text></svg>
 <div class="rsb xs" style="margin-top:4px">
 <span>横轴 0→30 天 · 虚线为 90% 黄金复习线（当前平均周期 ${avgS.toFixed(1)} 天）</span>
 ${dueN>0?`<button type="button" class="cf-btn" style="min-height:26px;padding:2px 8px" onclick="startReviewOnly()">捞回 ${dueN} 词 ›</button>`:""}
@@ -1377,7 +1448,7 @@ ${dueN>0?`<button type="button" class="cf-btn" style="min-height:26px;padding:2p
 <section class="box">
 <div class="sec-title"><span>近 12 周点亮足迹（共 84 天）</span><span class="sub">累计点亮 ${actDays} 天</span></div>
 <div class="heatmap-wrap"><div class="heatmap-grid">${hmCells.join("")}</div></div>
-<div class="row" style="justify-content:flex-end;gap:4px;margin-top:6px"><span class="xs">少</span><span class="hm-cell" style="opacity:.25"></span><span class="hm-cell" style="opacity:.5"></span><span class="hm-cell" style="opacity:.75"></span><span class="hm-cell"></span><span class="xs">多</span></div>
+<div class="row" style="justify-content:flex-end;gap:4px;margin-top:6px"><span class="xs">少</span><span class="hm-cell" data-lv="0"></span><span class="hm-cell" data-lv="1"></span><span class="hm-cell" data-lv="2"></span><span class="hm-cell" data-lv="3"></span><span class="hm-cell" data-lv="4"></span><span class="xs">多</span></div>
 <div class="bar-chart">`+
 days7.map((d,idx)=>{
 const c=H[d.toDateString()]||0,hPct=c===0?4:Math.max(10,Math.round((c/max7)*100)),isT=idx===6;
@@ -1473,12 +1544,17 @@ WALLS.filter(x=>x[0]!=="custom").map(([wid,wn,wbg])=>`<button type="button" clas
 </section>
 
 <section class="box set-group">
-<h2 class="sec-title">离线例句发音</h2>
+<h2 class="sec-title">语音包与发音隐私</h2>
 <div class="set-row">
-<div><div class="set-lbl">例句语音包（${SENT_TOTAL} 句）</div><div class="set-desc" id="pack-txt">${packIsNative()?(function(){const st=packStateNow();if(st&&st.state==="downloading")return "下载中…";const c=Math.min(window.AndroidAudio.packCount(),SENT_TOTAL);if(c>=SENT_TOTAL)return "✅ 全部例句已离线 · 点右侧可重新下载更新";if(c>0)return "已离线缓存 "+c+" / "+SENT_TOTAL+" 句 · 整包约 68MB";return "下载整包后，全部例句发音可离线播放"})():"网页版支持在线朗读；整包离线下载仅安卓版提供"}</div></div>
+<div><div class="set-lbl">例句语音包（${SENT_TOTAL} 句）</div><div class="set-desc" id="pack-txt">${packIsNative()?(function(){const st=packStateNow();if(st&&st.state==="downloading")return st.percent<0?"下载中…":(st.percent+"% · 已解压 "+st.unzip+" 句");if(st&&st.state==="error")return "下载失败："+(st.error||"请检查网络后重试");const c=Math.min(window.AndroidAudio.packCount(),SENT_TOTAL);if(c>=SENT_TOTAL)return "✅ 全部例句已离线 · 点右侧可重新下载更新";if(c>0)return "已离线缓存 "+c+" / "+SENT_TOTAL+" 句 · 整包约 70MB";return "下载整包后，全部例句发音可离线播放"})():"网页版支持在线朗读；整包离线下载仅安卓版提供"}</div></div>
 ${packIsNative()?'<button type="button" class="btn subtle sm" style="min-height:40px;padding:0 12px" onclick="downloadSentPack()">下载整包</button>':""}
 </div>
-<div class="pbar brand" style="margin-top:8px"><i id="pack-bar" style="width:${(function(){const st=packStateNow();if(st&&st.percent>0)return st.percent;if(packIsNative()&&window.AndroidAudio.packCount()>=SENT_TOTAL)return 100;return 0})()}%"></i></div>
+<div class="pbar brand" style="margin-top:8px"><i id="pack-bar" style="width:${(function(){const st=packStateNow();if(st&&st.state==="downloading")return st.percent>0?st.percent:8;if(st&&st.percent>0)return st.percent;if(packIsNative()&&window.AndroidAudio.packCount()>=SENT_TOTAL)return 100;return 0})()}%"></i></div>
+<div class="set-row" style="margin-top:6px">
+<div><div class="set-lbl">联网兜底发音</div><div class="set-desc">优先播放内置离线真人美音；开启后，仅在本地缺失音频或未下载例句包时请求有道/百度在线语音接口，关闭则严格纯离线运行</div></div>
+<button type="button" role="switch" aria-checked="${CFG.onlineAudio!==false}" class="ios-switch" onclick="CFG.onlineAudio=!(CFG.onlineAudio!==false);saveCfgOnly();render()" aria-label="联网兜底发音开关"><span class="ios-track"><span class="ios-thumb"></span></span></button>
+</div>
+<div class="detail-block xs" style="margin-top:8px;line-height:1.58">隐私与备份说明：所有学习记录与个性化配置仅保存在本机 localStorage，无账号体系、无后台统计上报；开启联网兜底发音时，仅将当前点按朗读的词句发送至在线语音接口。Android 客户端默认启用系统级应用数据备份（allowBackup），支持同账号换机或覆盖安装时自动留存学习进度。</div>
 </section>
 
 <section class="box set-group">
@@ -1509,17 +1585,18 @@ ${packIsNative()?'<button type="button" class="btn subtle sm" style="min-height:
 </div>
 <div class="set-row">
 <div><div class="set-lbl">揭示前真题语境挖空</div><div class="set-desc">先在六级真题原句中猜词义，记忆留存率提升一倍</div></div>
-<button type="button" role="switch" aria-checked="${!!CFG.cloze}" class="ios-switch" onclick="CFG.cloze=!CFG.cloze;save();render()" aria-label="揭示前真题语境挖空"><span class="ios-track"><span class="ios-thumb"></span></span></button>
+<button type="button" role="switch" aria-checked="${!!CFG.cloze}" class="ios-switch" onclick="CFG.cloze=!CFG.cloze;saveCfgOnly();render()" aria-label="揭示前真题语境挖空"><span class="ios-track"><span class="ios-thumb"></span></span></button>
 </div>
 <div class="set-row">
 <div><div class="set-lbl">选择题答对自动推进</div><div class="set-desc">选对后 0.5 秒自动下一题，选错停留看解析</div></div>
-<button type="button" role="switch" aria-checked="${!!CFG.quizAuto}" class="ios-switch" onclick="CFG.quizAuto=!CFG.quizAuto;save();render()" aria-label="选择题答对自动推进"><span class="ios-track"><span class="ios-thumb"></span></span></button>
+<button type="button" role="switch" aria-checked="${!!CFG.quizAuto}" class="ios-switch" onclick="CFG.quizAuto=!CFG.quizAuto;saveCfgOnly();render()" aria-label="选择题答对自动推进"><span class="ios-track"><span class="ios-thumb"></span></span></button>
 </div>
 </section>
 </div><div>
 <section class="box set-group">
 <h2 class="sec-title">学习进度备份与恢复</h2>
 <button type="button" class="btn ghost" onclick="exportP()">${ic("copy",16)} 导出备份 JSON 到剪贴板</button>
+${(function(){const cl=getCorruptBackups();return cl.length?`<div class="detail-block" style="margin-top:10px;border-color:var(--warn);background:var(--warn-soft)"><div class="xs" style="color:var(--warn-btn);font-weight:600;margin-bottom:6px">检测到上次异常重置前保留的原始损坏缓存副本，可导出至剪贴板与文本框以便排查或手动抢救：</div><button type="button" id="btn-export-corrupt" class="btn sm" style="width:100%;background:var(--card);color:var(--warn-btn);border:1.5px solid var(--warn)" onclick="exportCorruptBackup()">${ic("download",15)} 导出损坏缓存副本（${cl.length} 份）</button></div>`:"";})()}
 <textarea id="imp" placeholder="在此粘贴之前导出的备份 JSON，点击下方按钮即可无损恢复学习记录" style="width:100%;height:96px;margin-top:12px;padding:10px;border-radius:12px;border:1px solid var(--hairline);background:var(--surface);font-size:var(--fs-xs)"></textarea>
 <button type="button" class="btn subtle" style="margin-top:8px" onclick="importP()">${ic("download",16)} 导入并恢复进度</button>
 ${msg?`<div class="detail-block tc" style="color:var(--brand)">${escH(msg)}</div>`:""}
@@ -1820,6 +1897,7 @@ stopAudio();
 const raw=String(w).trim();
 if(raw.length>48){playLongSentence(raw);return}
 if(nativePlay(raw))return;
+if(CFG.onlineAudio===false){showToast("当前为纯离线发音模式，例句离线包可在偏好页下载");return}
 const cleanW=sanitizeAudioText(raw);
 if(!cleanW)return;
 try{
@@ -1850,6 +1928,7 @@ try{
 if(window.AndroidAudio&&typeof window.AndroidAudio.sentencePlay==="function"){
 try{if(window.AndroidAudio.sentencePlay(cleanS))return}catch(e){}
 }
+if(CFG.onlineAudio===false){showToast("当前为纯离线发音模式，例句离线包可在偏好页下载");return}
 const a=new Audio(ttsUrl(cleanS,4));
 currentAudio=a;
 let started=false;
@@ -1862,15 +1941,15 @@ if(p&&p.then)p.then(markOk).catch(function(){if(currentAudio===a&&!started){star
 try{if(window.AndroidAudio&&window.AndroidAudio.cacheSentence)window.AndroidAudio.cacheSentence(cleanS)}catch(e){}
 }catch(e){showToast("例句朗读需联网")}
 }
-const TRANSLATION_DRILLS=[{"zh": "春节是中国最重要的传统节日，家人通常会在这一天团聚，共进丰盛的年夜饭。", "en": "The Spring Festival is the most important traditional festival in China, when family members usually get together and enjoy a sumptuous reunion dinner.", "tag": "中国文化"}, {"zh": "书法在中国有着悠久的历史，它不仅是书写文字的方式，更是一门承载着审美与修养的艺术。", "en": "Calligraphy has a long history in China. It is not merely a way of writing characters, but an art that carries aesthetics and personal cultivation.", "tag": "中国文化"}, {"zh": "茶文化在中国源远流长，中国人相信饮茶有益健康，能够使人内心平静、思路清晰。", "en": "Tea culture has a long history in China. Chinese people believe that drinking tea is beneficial to health, as it can bring inner peace and clear thinking.", "tag": "中国文化"}, {"zh": "长城是世界上最伟大的建筑工程之一，它凝聚了古代劳动人民的智慧与汗水。", "en": "The Great Wall is one of the greatest construction projects in the world, embodying the wisdom and diligence of the working people in ancient times.", "tag": "中国文化"}, {"zh": "苏州园林以其精巧的设计闻名于世，体现了人与自然和谐共处的理念。", "en": "Suzhou gardens are world-famous for their exquisite designs, reflecting the ideal of harmony between man and nature.", "tag": "中国文化"}, {"zh": "高铁网络的迅速发展极大地方便了人们的出行，促进了沿线城市的经济发展。", "en": "The rapid development of the high-speed railway network has greatly facilitated travel and boosted the economic growth of cities along the lines.", "tag": "科技与发展"}, {"zh": "移动支付在中国已经十分普及，人们出门几乎不需要携带现金。", "en": "Mobile payment has become so widespread in China that people hardly need to carry cash when going out.", "tag": "科技与发展"}, {"zh": "人工智能正在改变我们的生活方式，但同时也带来了就业结构方面的挑战。", "en": "Artificial intelligence is changing the way we live, while at the same time posing challenges to the employment structure.", "tag": "科技与发展"}, {"zh": "近年来，中国在航天领域取得了举世瞩目的成就，包括载人航天和月球探测。", "en": "In recent years, China has made remarkable achievements in aerospace, including manned spaceflight and lunar exploration.", "tag": "科技与发展"}, {"zh": "中国的5G技术处于世界领先地位，为智慧城市的建设奠定了坚实基础。", "en": "China's 5G technology is in a leading position in the world, laying a solid foundation for the construction of smart cities.", "tag": "科技与发展"}, {"zh": "中国政府高度重视教育，不断加大对教育的投入，努力促进教育公平。", "en": "The Chinese government attaches great importance to education, continuously increasing investment in it and striving to promote educational equality.", "tag": "教育与人才"}, {"zh": "随着互联网的普及，在线教育使越来越多的人能够随时随地学习新知识。", "en": "With the popularity of the Internet, online education enables more and more people to acquire new knowledge anytime and anywhere.", "tag": "教育与人才"}, {"zh": "越来越多的中国学生选择出国留学，以开阔视野、增长见识。", "en": "An increasing number of Chinese students choose to study abroad so as to broaden their horizons and enrich their experience.", "tag": "教育与人才"}, {"zh": "职业教育与普通教育同等重要，社会需要各类高素质的技能型人才。", "en": "Vocational education is as important as general education, for society needs skilled talents of various kinds with high quality.", "tag": "教育与人才"}, {"zh": "终身学习的理念正在深入人心，学习不再局限于校园之内。", "en": "The concept of lifelong learning is gaining popularity, as learning is no longer confined to the campus.", "tag": "教育与人才"}, {"zh": "改革开放以来，中国经济持续快速发展，人民生活水平显著提高。", "en": "Since the reform and opening-up, China's economy has maintained rapid growth, and people's living standards have improved remarkably.", "tag": "经济与生活"}, {"zh": "电子商务的兴起改变了传统的消费方式，网上购物已成为日常生活的一部分。", "en": "The rise of e-commerce has transformed the traditional way of consumption, and online shopping has become part of daily life.", "tag": "经济与生活"}, {"zh": "中国积极推动可持续发展，大力投资清洁能源以应对气候变化。", "en": "China actively promotes sustainable development and invests heavily in clean energy to cope with climate change.", "tag": "经济与生活"}, {"zh": "城镇化进程的加快为农村人口提供了更多的就业机会，同时也带来了新的社会问题。", "en": "The acceleration of urbanization has provided rural people with more job opportunities, while bringing about new social problems as well.", "tag": "经济与生活"}, {"zh": "中欧之间的贸易往来日益密切，双方在多个领域展开了深入合作。", "en": "Trade between China and Europe is becoming increasingly close, with both sides carrying out in-depth cooperation in various fields.", "tag": "经济与生活"}, {"zh": "随着人口老龄化问题的加剧，中国社会正努力完善养老服务体系。", "en": "As the problem of population aging intensifies, Chinese society is making great efforts to improve the elderly care service system.", "tag": "社会与民生"}, {"zh": "越来越多的年轻人加入志愿者队伍，为社区建设贡献自己的力量。", "en": "More and more young people have joined the volunteer team, contributing their own strength to community building.", "tag": "社会与民生"}, {"zh": "公众的环保意识不断增强，垃圾分类在许多城市已经蔚然成风。", "en": "Public awareness of environmental protection has been growing, and garbage sorting has become common practice in many cities.", "tag": "社会与民生"}, {"zh": "健康意识的提高使人们更加注重均衡饮食和定期锻炼。", "en": "The rising awareness of health has made people pay more attention to a balanced diet and regular exercise.", "tag": "社会与民生"}, {"zh": "政府对食品安全实行严格监管，以保障人民群众的身体健康。", "en": "The government exercises strict supervision over food safety so as to safeguard the health of the people.", "tag": "社会与民生"}, {"zh": "兵马俑被誉为世界第八大奇迹，每年吸引着成千上万的游客前来参观。", "en": "The Terracotta Warriors are known as the eighth wonder of the world, attracting thousands upon thousands of visitors every year.", "tag": "历史与名胜"}, {"zh": "西湖以其秀丽的湖光山色和众多的历史传说而闻名天下。", "en": "The West Lake is famous throughout the world for its beautiful scenery of hills and waters as well as its numerous historical legends.", "tag": "历史与名胜"}, {"zh": "丝绸之路是古代连接中国与欧洲的重要贸易通道，促进了东西方文明的交流。", "en": "The Silk Road was a vital trade route linking China and Europe in ancient times, which promoted the exchange between Eastern and Western civilizations.", "tag": "历史与名胜"}, {"zh": "故宫是世界上现存规模最大、保存最完整的古代宫殿建筑群。", "en": "The Palace Museum, known as the Forbidden City, is the largest and best-preserved ancient palace complex in the world.", "tag": "历史与名胜"}, {"zh": "黄河被誉为中华民族的母亲河，孕育了灿烂的中华文明。", "en": "The Yellow River, hailed as the mother river of the Chinese nation, gave birth to the splendid Chinese civilization.", "tag": "历史与名胜"}];
-const WRITING_BANK=[["图表 / 图画描述", [["As is vividly depicted in the chart, ... has witnessed a dramatic change over the past decade.", "图表作文万能开头：如图所示，……在过去十年经历了显著变化。"], ["The bar chart illustrates the percentage of ... in 2020 compared with that in 2015.", "柱状图对比句式：柱状图展示了……与……的百分比对比。"], ["What is conveyed in the picture is that ...", "图画作文开头：图画所传达的信息是……"], ["The number of ... increased / decreased sharply, rising / dropping from ... to ...", "数据变化句式：数量急剧上升/下降，从……升至/降至……"], ["In contrast, the figure for ... remained relatively stable during the same period.", "对比句：相比之下，同期……的数据相对稳定。"]]], ["引出现象 / 话题", [["In recent years, ... has become a heated topic among the general public.", "引出热议话题：近年来，……成为公众热议的话题。"], ["Nowadays, there is a growing tendency for ... to ...", "现象描述：如今，……的趋势日益明显。"], ["With the rapid development of ..., an increasing number of people have begun to ...", "背景引入：随着……的迅速发展，越来越多的人开始……"], ["It is universally acknowledged that ... plays an increasingly important role in ...", "公认观点：众所周知，……在……中扮演着日益重要的角色。"], ["Recently, the issue of ... has aroused wide public concern.", "引出争议话题：最近，……的问题引起了广泛的公众关注。"]]], ["观点与论证", [["From my perspective, the advantages of ... far outweigh its disadvantages.", "表明立场：在我看来，……利远大于弊。"], ["There are two fundamental factors contributing to this phenomenon.", "原因分析框架：有两个基本因素促成了这一现象。"], ["First and foremost, ... Moreover, ... Last but not least, ...", "三条理由连接词组：首先/其次/最后。"], ["A case in point is that ..., which clearly demonstrates ...", "举例论证：一个典型的例子是……，这清楚地表明……"], ["According to a recent survey conducted by ..., nearly ... percent of respondents ...", "数据论证：根据……的最新调查，近……%的受访者……"], ["It is the responsibility of every individual to ...", "强调责任：……是每个人的责任。（It is ... that/to 强调句）"]]], ["让步 / 转折 / 对比", [["Admittedly, ... However, this does not mean that ...", "让步转折：诚然……，但这并不意味着……"], ["While some people argue that ..., others maintain that ...", "观点对比：尽管有人认为……，另一些人则坚持……"], ["Despite the fact that ..., ... still faces a series of challenges.", "尽管句式：尽管……，……仍然面临一系列挑战。"], ["On the one hand, ... On the other hand, ...", "两方面对照：一方面……另一方面……"], ["By no means does it suggest that we should ...", "倒装强调：这绝不意味着我们应该……（倒装句加分）"]]], ["结论与建议", [["In conclusion, ... It is high time that we placed considerable emphasis on ...", "结论 + 虚拟语气：是时候高度重视……了（high time + 过去式，语法亮点）。"], ["To sum up, ... Only in this way can we ...", "总结 + 倒装：只有这样我们才能……（Only 倒装，加分句式）。"], ["It is advisable for the authorities to introduce relevant regulations to ...", "建议措施：当局宜出台相关规定以……"], ["As college students, we should ... rather than ...", "联系自身：作为大学生，我们应当……而不是……"], ["If every member of society makes a concerted effort, ... will be within reach.", "展望收尾：只要全社会共同努力，……指日可待。"]]]];
-const UPGRADE_WORDS=[["think", "contend / maintain", "I contend that ..."], ["important", "paramount / crucial", "plays a paramount role in ..."], ["more and more", "an increasing number of", "an increasing number of graduates"], ["but / however", "nevertheless / whereas", "He failed; nevertheless, he tried again."], ["because of", "owing to / on account of", "owing to the shortage of funds"], ["get", "acquire / obtain", "acquire practical skills"], ["help", "facilitate / promote", "facilitate cross-cultural communication"], ["show", "demonstrate / reveal", "the chart demonstrates that ..."], ["good", "beneficial / rewarding", "a rewarding experience"], ["bad", "detrimental / adverse", "be detrimental to one's health"], ["famous", "renowned / eminent", "a world-renowned university"], ["improve", "enhance / boost", "enhance national competitiveness"], ["solve", "tackle / address / resolve", "address the root cause"], ["use", "employ / adopt / harness", "harness solar energy"], ["very", "exceedingly / considerably", "exceedingly important"]];
+const TRANSLATION_DRILLS=[{"zh":"春节是中国最重要的传统节日，家人通常会在这一天团聚，共进丰盛的年夜饭。","en":"The Spring Festival is the most important traditional festival in China, when family members usually get together and enjoy a sumptuous reunion dinner.","tag":"中国文化"},{"zh":"书法在中国有着悠久的历史，它不仅是书写文字的方式，更是一门承载着审美与修养的艺术。","en":"Calligraphy has a long history in China. It is not merely a way of writing characters, but an art that embodies aesthetic taste and personal cultivation.","tag":"中国文化"},{"zh":"茶文化在中国源远流长，中国人相信饮茶有益健康，能够使人内心平静、思路清晰。","en":"Tea culture has a time-honored history in China. Chinese people believe that drinking tea is beneficial to health, as it brings inner peace and a clear mind.","tag":"中国文化"},{"zh":"长城是世界上最伟大的建筑工程之一，它凝聚了古代劳动人民的智慧与汗水。","en":"The Great Wall is one of the greatest architectural wonders in the world, embodying the wisdom and hard work of the working people in ancient times.","tag":"中国文化"},{"zh":"苏州园林以其精巧的设计闻名于世，体现了人与自然和谐共处的理念。","en":"Suzhou gardens are world-famous for their exquisite designs, reflecting the philosophy of harmonious coexistence between man and nature.","tag":"中国文化"},{"zh":"高铁网络的迅速发展极大地方便了人们的出行，促进了沿线城市的经济发展。","en":"The rapid development of the high-speed railway network has greatly facilitated travel and boosted the economic growth of cities along the lines.","tag":"科技与发展"},{"zh":"移动支付在中国已经十分普及，人们出门几乎不需要携带现金。","en":"Mobile payment has become so widespread in China that people hardly need to carry cash when going out.","tag":"科技与发展"},{"zh":"人工智能正在改变我们的生活方式，但同时也带来了就业结构方面的挑战。","en":"Artificial intelligence is transforming the way we live, while at the same time posing challenges to the employment structure.","tag":"科技与发展"},{"zh":"近年来，中国在航天领域取得了举世瞩目的成就，包括载人航天和月球探测。","en":"In recent years, China has made remarkable achievements in aerospace, including manned spaceflight and lunar exploration.","tag":"科技与发展"},{"zh":"中国的5G技术处于世界领先地位，为智慧城市的建设奠定了坚实基础。","en":"China's 5G technology holds a leading position in the world, laying a solid foundation for the construction of smart cities.","tag":"科技与发展"},{"zh":"中国政府高度重视教育，不断加大对教育的投入，努力促进教育公平。","en":"The Chinese government attaches great importance to education, continuously increasing investment in it and striving to promote educational equity.","tag":"教育与人才"},{"zh":"随着互联网的普及，在线教育使越来越多的人能够随时随地学习新知识。","en":"With the popularization of the Internet, online education enables more and more people to acquire new knowledge anytime and anywhere.","tag":"教育与人才"},{"zh":"越来越多的中国学生选择出国留学，以开阔视野、增长见识。","en":"An increasing number of Chinese students choose to study abroad so as to broaden their horizons and enrich their experience.","tag":"教育与人才"},{"zh":"职业教育与普通教育同等重要，社会需要各类高素质的技能型人才。","en":"Vocational education is as important as general education, for society needs high-caliber skilled professionals in various fields.","tag":"教育与人才"},{"zh":"终身学习的理念正在深入人心，学习不再局限于校园之内。","en":"The concept of lifelong learning is taking root in people's minds, and learning is no longer confined to the campus.","tag":"教育与人才"},{"zh":"改革开放以来，中国经济持续快速发展，人民生活水平显著提高。","en":"Since the reform and opening-up, China's economy has maintained sustained and rapid growth, and people's living standards have improved remarkably.","tag":"经济与生活"},{"zh":"电子商务的兴起改变了传统的消费方式，网上购物已成为日常生活的一部分。","en":"The rise of e-commerce has transformed traditional consumption patterns, and online shopping has become part of daily life.","tag":"经济与生活"},{"zh":"中国积极推动可持续发展，大力投资清洁能源以应对气候变化。","en":"China actively promotes sustainable development and invests heavily in clean energy to tackle climate change.","tag":"经济与生活"},{"zh":"城镇化进程的加快为农村人口提供了更多的就业机会，同时也带来了新的社会问题。","en":"The acceleration of urbanization has provided the rural population with more job opportunities, while bringing about new social challenges as well.","tag":"经济与生活"},{"zh":"中欧之间的贸易往来日益密切，双方在多个领域展开了深入合作。","en":"Trade ties between China and Europe are becoming increasingly close, with both sides carrying out in-depth cooperation in various fields.","tag":"经济与生活"},{"zh":"随着人口老龄化问题的加剧，中国社会正努力完善养老服务体系。","en":"As population aging intensifies, Chinese society is making great efforts to improve the elderly care service system.","tag":"社会与民生"},{"zh":"越来越多的年轻人加入志愿者队伍，为社区建设贡献自己的力量。","en":"More and more young people have joined the ranks of volunteers, doing their part for community development.","tag":"社会与民生"},{"zh":"公众的环保意识不断增强，垃圾分类在许多城市已经蔚然成风。","en":"Public awareness of environmental protection has been growing, and garbage sorting has become a common practice in many cities.","tag":"社会与民生"},{"zh":"健康意识的提高使人们更加注重均衡饮食和定期锻炼。","en":"Growing health awareness has led people to pay greater attention to a balanced diet and regular exercise.","tag":"社会与民生"},{"zh":"政府对食品安全实行严格监管，以保障人民群众的身体健康。","en":"The government exercises strict supervision over food safety so as to safeguard public health.","tag":"社会与民生"},{"zh":"兵马俑被誉为世界第八大奇迹，每年吸引着成千上万的游客前来参观。","en":"The Terracotta Warriors are hailed as the Eighth Wonder of the World, attracting tens of thousands of visitors every year.","tag":"历史与名胜"},{"zh":"西湖以其秀丽的湖光山色和众多的历史传说而闻名天下。","en":"West Lake is world-renowned for its scenic beauty of lakes and mountains as well as its numerous historical legends.","tag":"历史与名胜"},{"zh":"丝绸之路是古代连接中国与欧洲的重要贸易通道，促进了东西方文明的交流。","en":"The Silk Road was a vital trade route linking China and Europe in ancient times, promoting exchanges between Eastern and Western civilizations.","tag":"历史与名胜"},{"zh":"故宫是世界上现存规模最大、保存最完整的古代宫殿建筑群。","en":"The Palace Museum, also known as the Forbidden City, is the largest and best-preserved existing ancient palace complex in the world.","tag":"历史与名胜"},{"zh":"黄河被誉为中华民族的母亲河，孕育了灿烂的中华文明。","en":"The Yellow River, hailed as the mother river of the Chinese nation, has nurtured the splendid Chinese civilization.","tag":"历史与名胜"}];
+const WRITING_BANK=[["图表 / 图画描述",[["As is vividly depicted in the chart, ... has witnessed a dramatic change over the past decade.","图表作文万能开头：如图所示，……在过去十年经历了显著变化。"],["The bar chart illustrates the percentage of ... in 2025 compared with that in 2020.","柱状图对比句式：柱状图展示了……与……的百分比对比。"],["What is vividly conveyed in the drawing is that ...","图画作文开头：图画所生动传达的信息是……"],["The number of ... increased / decreased sharply, rising / dropping from ... to ...","数据变化句式：数量急剧上升/下降，从……升至/降至……"],["In contrast, the figure for ... remained relatively stable during the same period.","对比句：相比之下，同期……的数据保持相对稳定。"]]],["引出现象 / 话题",[["In recent years, ... has become a topic of heated debate among the general public.","引出热议话题：近年来，……成为公众热议的焦点话题。"],["Nowadays, there is a growing tendency for ... to ...","现象描述：如今，……的趋势日益明显。"],["With the rapid advancement of ..., an increasing number of people have come to ...","背景引入：随着……的迅速发展，越来越多的人开始……"],["It is universally acknowledged that ... plays a pivotal role in ...","公认观点：众所周知，……在……中扮演着至关重要的角色。"],["Recently, the issue of ... has aroused widespread public concern.","引出社会议题：近期，……问题引起了广泛的社会关注。"]]],["观点与论证",[["From my perspective, the merits of ... far outweigh its drawbacks.","表明立场：在我看来，……利远大于弊。"],["There are two fundamental factors contributing to this phenomenon.","原因分析框架：有两个根本原因促成了这一现象。"],["First and foremost, ... Furthermore, ... Last but not least, ...","递进衔接词组：首先 / 此外 / 最后同样重要的是。"],["A case in point is that ..., which clearly demonstrates ...","举例论证：一个典型的例证是……，这有力地表明……"],["According to a recent survey conducted by ..., nearly ... percent of respondents ...","数据论证：根据……开展的最新调查，近……%的受访者……"],["It is the responsibility of every individual to ...","强调责任：……是每个人的职责所在。（It 作形式主语的高频句式）"]]],["让步 / 转折 / 对比",[["Admittedly, ... However, this does not necessarily mean that ...","让步转折：诚然……，但这并不必然意味着……"],["While some people contend that ..., others maintain that ...","观点对比：尽管有人认为……，另一些人则坚持……"],["Despite the fact that ..., ... still confronts a series of challenges.","尽管句式：尽管……，……依然面临一系列挑战。"],["On the one hand, ... On the other hand, ...","双维对照：一方面……另一方面……"],["By no means does this suggest that we should turn a blind eye to ...","倒装强调：这绝不意味着我们应当对……视而不见。（否定词置首倒装加分）"]]],["结论与建议",[["In conclusion, ... It is high time that we placed considerable emphasis on ...","结论 + 虚拟语气：综上所述，是时候高度重视……了（high time + 过去式）。"],["To sum up, ... Only through joint efforts can we ...","总结 + 倒装：总之，唯有共同努力我们才能……（Only 置首部分倒装）。"],["It is advisable for the relevant authorities to enforce sound regulations to ...","建议措施：有关部门宜施行健全的规章制度以……"],["As college students, we are supposed to ... rather than ...","联系自身：作为大学生，我们应当……而非……"],["If all sectors of society make a concerted effort, a promising future for ... will be within reach.","展望收尾：只要社会各界齐心协力，……的美好前景便指日可待。"]]]];
+const UPGRADE_WORDS=[["think","contend / maintain","I contend that lifelong learning is essential."],["important","crucial / of paramount importance","play a crucial role in / be of paramount importance"],["more and more","an increasing number of","an increasing number of college graduates"],["but / however","nevertheless / whereas","The task is demanding; nevertheless, it is well worth the effort."],["because of","owing to / on account of","owing to the rapid advancement of technology"],["get","acquire / obtain","acquire practical skills and professional competence"],["help","facilitate / promote","facilitate cross-cultural communication"],["show","demonstrate / reveal","the statistics clearly demonstrate that ..."],["good","beneficial / rewarding","a genuinely rewarding academic experience"],["bad","detrimental / adverse","exert a detrimental impact on public health"],["famous","renowned / eminent","a world-renowned cultural heritage site"],["improve","enhance / boost","enhance core competitiveness"],["solve","tackle / address / resolve","address the root cause of the problem"],["use","employ / adopt / harness","harness clean and renewable energy"],["very","exceedingly / remarkably","prove exceedingly effective in practice"]];
 let drillIdx=-1,drillShown=false,drillOrder=[],drillTag="全部",drillRound={ok:0,fuzzy:0,bad:0};
 let drillStats={ok:0,fuzzy:0,bad:0};
 try{drillStats=JSON.parse(localStorage.getItem("dstat"))||{ok:0,fuzzy:0,bad:0}}catch(e){}
 function saveDrillStats(){try{localStorage.setItem("dstat",JSON.stringify(drillStats))}catch(e){}}
 function drillSetTag(t){drillTag=t;drillOrder=TRANSLATION_DRILLS.map((_,i)=>i).filter(i=>t==="全部"||TRANSLATION_DRILLS[i].tag===t);shuffle(drillOrder);drillIdx=0;drillShown=false;drillRound={ok:0,fuzzy:0,bad:0};render()}
-const SENT_PACK_URL="https://github.com/wcx1208/cet6-words/releases/download/v3.4/sentence-voice-pack.zip";
+const SENT_PACK_URL="https://github.com/wcx1208/cet6-words/releases/download/v3.8.1/sentence-voice-pack.zip";
 const SENT_TOTAL=WORDS.length;
 function packIsNative(){return !!(window.AndroidAudio&&window.AndroidAudio.downloadPack)}
 function packStateNow(){try{return JSON.parse(window.AndroidAudio.packStatus())}catch(e){return null}}
@@ -1920,6 +1999,7 @@ if(window.__packTimer){clearInterval(window.__packTimer);window.__packTimer=null
 });
 function playTts(t){
 stopAudio();
+if(CFG.onlineAudio===false)return;
 const cleanT=sanitizeAudioText(t);
 if(!cleanT)return;
 try{
@@ -2175,24 +2255,122 @@ const setImp=()=>{const el=document.getElementById("imp");if(el)el.value=j};
 setImp();
 copyText(j,()=>{msg="✅ 进度已复制到剪贴板，同时显示在上方文本框中";showToast("已复制备份 JSON");render();setImp()},()=>{msg="已生成备份 JSON，请全选复制上方文本框内容保存";render();setImp()});
 }
-function importP(){
-try{
-const v=(document.getElementById("imp")?.value||"").trim();if(!v){msg="请先粘贴备份 JSON 内容";render();return}
-const o=JSON.parse(v);
-if(o&&typeof o.srs==="object"&&!Array.isArray(o.srs)){
-S=o.srs;
-H=(o.hist&&typeof o.hist==="object"&&!Array.isArray(o.hist))?o.hist:{};
-const incCfg=(o.cfg&&typeof o.cfg==="object"&&!Array.isArray(o.cfg))?o.cfg:{};
-CFG=Object.assign(CFG,incCfg);
+const CFG_WHITELIST=new Set(["daily","examDate","auto","cloze","scenic","incBook","quizAuto","sfx","onlineAudio","theme","wall","wallA","uiA","_v2ui"]);
+const BAD_KEYS=new Set(["__proto__","constructor","prototype"]);
+function isFiniteIn(v,lo,hi){return typeof v==="number"&&Number.isFinite(v)&&v>=lo&&v<=hi}
+function validateImportPayload(o){
+if(!o||typeof o!=="object"||Array.isArray(o))return {ok:false,err:"备份格式不正确：根节点必须是 JSON 对象"};
+if(!o.srs||typeof o.srs!=="object"||Array.isArray(o.srs))return {ok:false,err:"备份格式不正确：缺少有效的 srs 字段"};
+const nextS={};
+for(const k of Object.keys(o.srs)){
+if(!k||BAD_KEYS.has(k))return {ok:false,err:"备份包含非法词条键名"};
+const rec=o.srs[k];
+if(!rec||typeof rec!=="object"||Array.isArray(rec))return {ok:false,err:`词条 "${k}" 格式无效`};
+if(!isFiniteIn(rec.iv,0,36500))return {ok:false,err:`词条 "${k}" 的 iv 数值无效`};
+if(rec.s!==undefined&&!isFiniteIn(rec.s,0,36500))return {ok:false,err:`词条 "${k}" 的 s 数值无效`};
+if(rec.d!==undefined&&!isFiniteIn(rec.d,0,10))return {ok:false,err:`词条 "${k}" 的 d 数值无效`};
+if(rec.r!==undefined&&!isFiniteIn(rec.r,0,100000))return {ok:false,err:`词条 "${k}" 的 r 数值无效`};
+if(rec.reps!==undefined&&!isFiniteIn(rec.reps,0,100000))return {ok:false,err:`词条 "${k}" 的 reps 数值无效`};
+if(rec.wCnt!==undefined&&!isFiniteIn(rec.wCnt,0,100000))return {ok:false,err:`词条 "${k}" 的 wCnt 数值无效`};
+if(rec.lapses!==undefined&&!isFiniteIn(rec.lapses,0,100000))return {ok:false,err:`词条 "${k}" 的 lapses 数值无效`};
+if(rec.due!==undefined&&!isFiniteIn(rec.due,0,9e15))return {ok:false,err:`词条 "${k}" 的 due 数值无效`};
+if(rec.lr!==undefined&&!isFiniteIn(rec.lr,0,9e15))return {ok:false,err:`词条 "${k}" 的 lr 数值无效`};
+if(rec.e!==undefined&&!isFiniteIn(rec.e,1,5))return {ok:false,err:`词条 "${k}" 的 e 数值无效`};
+if(rec.ease!==undefined&&!isFiniteIn(rec.ease,1,5))return {ok:false,err:`词条 "${k}" 的 ease 数值无效`};
+if(rec.g!==undefined&&!isFiniteIn(rec.g,0,3))return {ok:false,err:`词条 "${k}" 的 g 数值无效`};
+if(rec.star!==undefined&&typeof rec.star!=="boolean")return {ok:false,err:`词条 "${k}" 的 star 字段无效`};
+const rVal=rec.r!==undefined?rec.r:(rec.reps!==undefined?rec.reps:0);
+const wVal=rec.wCnt!==undefined?rec.wCnt:(rec.lapses!==undefined?rec.lapses:0);
+const clean={
+iv:rec.iv,
+e:rec.e!==undefined?rec.e:(rec.ease!==undefined?rec.ease:2.5),
+ease:rec.ease!==undefined?rec.ease:(rec.e!==undefined?rec.e:2.5),
+due:rec.due!==undefined?rec.due:0,
+r:rVal,
+wCnt:wVal,
+star:!!rec.star,
+g:rec.g!==undefined?rec.g:2
+};
+if(rec.s!==undefined)clean.s=rec.s;
+if(rec.d!==undefined)clean.d=rec.d;
+if(rec.lr!==undefined)clean.lr=rec.lr;
+if(clean.r||clean.iv||clean.wCnt||clean.star)nextS[k]=clean;
+}
+const nextH={};
+if(o.hist!==undefined){
+if(!o.hist||typeof o.hist!=="object"||Array.isArray(o.hist))return {ok:false,err:"备份格式不正确：hist 必须是对象"};
+for(const k of Object.keys(o.hist)){
+if(!k||BAD_KEYS.has(k))return {ok:false,err:"备份包含非法 hist 键名"};
+if(!isFiniteIn(o.hist[k],0,1e9))return {ok:false,err:`hist["${k}"] 数值无效`};
+nextH[k]=o.hist[k];
+}
+}
+const nextCfg=Object.assign({},CFG);
+let legacyWallImg="";
+if(o.cfg!==undefined){
+if(!o.cfg||typeof o.cfg!=="object"||Array.isArray(o.cfg))return {ok:false,err:"备份格式不正确：cfg 必须是对象"};
+for(const k of Object.keys(o.cfg)){
+if(BAD_KEYS.has(k))continue;
+const val=o.cfg[k];
+if(k==="wallImg"&&typeof val==="string"&&val.startsWith("data:image/")){legacyWallImg=val;continue}
+if(!CFG_WHITELIST.has(k))continue;
+if(k==="daily"){if(isFiniteIn(val,1,500))nextCfg.daily=Math.round(val)}
+else if(k==="examDate"){if(typeof val==="string"&&/^\d{4}-\d{2}-\d{2}$/.test(val))nextCfg.examDate=val}
+else if(k==="theme"){if(["auto","light","dark"].includes(val))nextCfg.theme=val}
+else if(k==="wall"){if(typeof val==="string"&&WALLS.some(w=>w[0]===val))nextCfg.wall=val}
+else if(k==="wallA"){if(isFiniteIn(val,0,1))nextCfg.wallA=val}
+else if(k==="uiA"){if(isFiniteIn(val,.4,1))nextCfg.uiA=val}
+else if(k==="_v2ui"){if(isFiniteIn(val,0,10))nextCfg._v2ui=val}
+else if(typeof val==="boolean"){nextCfg[k]=val}
+}
+}
+const nextTier=(o.tier&&TIERS.some(x=>x[0]===o.tier))?o.tier:null;
+const nextMode=(o.mode&&["smart","card","quiz","type","dict"].includes(o.mode))?o.mode:null;
+return {ok:true,data:{srs:nextS,hist:nextH,cfg:nextCfg,tier:nextTier,mode:nextMode,wallImg:legacyWallImg}};
+}
+let pendingImport=null;
+function cancelImportP(){pendingImport=null;closeModal()}
+function confirmImportP(){
+if(!pendingImport){closeModal();return}
+const p=pendingImport;
+pendingImport=null;
+const curBackup=JSON.stringify({srs:S,hist:H,cfg:CFG,tier,mode,savedAt:Date.now()});
+try{localStorage.setItem("backup_pre_import",curBackup)}catch(_){}
+copyText(curBackup,()=>{},()=>{});
+S=p.srs;H=p.hist;CFG=p.cfg;
+if(p.tier){tier=p.tier;localStorage.setItem("tier",tier)}
+if(p.mode){mode=p.mode;localStorage.setItem("mode",mode)}
+if(p.wallImg){try{localStorage.setItem("wall_img",p.wallImg)}catch(_){}}
 sanitizeState();
-if(o.tier&&TIERS.some(x=>x[0]===o.tier)){tier=o.tier;localStorage.setItem("tier",tier)}
-if(o.mode&&["smart","card","quiz","type","dict"].includes(o.mode)){mode=o.mode;localStorage.setItem("mode",mode)}
 Q=[];qi=0;doneCnt=0;combo=0;maxCombo=0;sessionWrong=[];historyStack=[];
 sessionStorage.removeItem("cet6_sess");
 applyTheme(CFG.theme);applyWall();save();
-msg="🎉 导入恢复成功！";showToast("学习进度已完整恢复");render();
-}else{msg="备份格式不正确：缺少有效的 srs 字段";render()}
-}catch(e){msg="JSON 解析失败："+e.message;render()}
+const incCnt=Object.keys(p.srs).length;
+msg=`🎉 导入恢复成功！已恢复 ${incCnt} 词进度（原进度已自动留存备份）`;
+window.__modalReadonly=true;
+closeModal(true);
+showToast("学习进度已完整恢复");
+}
+function importP(rawOverride){
+try{
+const v=(typeof rawOverride==="string"?rawOverride:(document.getElementById("imp")?.value||"")).trim();
+if(!v){msg="请先粘贴备份 JSON 内容";render();return false}
+const o=JSON.parse(v);
+const res=validateImportPayload(o);
+if(!res.ok){msg="备份数据校验未通过："+res.err+"，已中止导入，当前进度未受影响";render();return false}
+pendingImport=res.data;
+const incCnt=Object.keys(res.data.srs).length;
+const curCnt=Object.keys(S).length;
+window.__modalReadonly=true;
+R("modal-root",`<div class="modal-mask" role="dialog" aria-modal="true" onclick="cancelImportP()"><div class="modal-card" onclick="event.stopPropagation()">
+<h3 style="margin:0 0 8px;font-size:var(--fs-h2)">确认导入并覆盖当前进度？</h3>
+<p style="margin:0 0 18px;color:var(--ink-2);line-height:1.6">即将用备份中的 <b>${incCnt}</b> 词记录覆盖本机现有的 <b>${curCnt}</b> 词记录。确认后系统将先把当前进度自动备份至本机（<code>backup_pre_import</code>）并尝试复制到剪贴板。</p>
+<div class="row" style="gap:10px">
+<button type="button" class="btn subtle f1" onclick="cancelImportP()">取消</button>
+<button type="button" class="btn f1" id="btn-confirm-import" onclick="confirmImportP()">确认覆盖并恢复</button>
+</div></div></div>`);
+return true;
+}catch(e){pendingImport=null;msg="JSON 解析失败，请检查粘贴内容是否完整："+e.message;render();return false}
 }
 function openResetModal(){
 const learnedCnt=WORDS.filter(x=>isLearned(x.w)).length;
@@ -2236,7 +2414,7 @@ if(document.hidden)document.documentElement.classList.add("bg-paused");
 document.addEventListener("visibilitychange",()=>{document.documentElement.classList.toggle("bg-paused",document.hidden);if(!document.hidden)checkDay()});
 window.addEventListener("resize",()=>{if(page==="list")onVScroll(true)});
 render();
-if(storageRecovered)setTimeout(()=>showToast("检测到损坏的本地缓存，已自动修复重置"),400);
+if(storageRecovered)setTimeout(()=>showToast("检测到本地缓存异常，已自动保留损坏副本（可在偏好页导出抢救）"),400);
 </script>
 </body>
 </html>

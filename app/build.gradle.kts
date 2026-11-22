@@ -19,8 +19,8 @@ android {
         applicationId = "com.wcx.mywords"
         minSdk = 26
         targetSdk = 34
-        versionCode = 28
-        versionName = "3.8"
+        versionCode = 30
+        versionName = "3.8.1"
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
@@ -54,20 +54,13 @@ android {
     }
 }
 
-// 构建前自动把 docs/ 的网页同步进 assets/web，杜绝「改了网页忘同步安卓」。
-// 命令行构建副本（android-build/MyWords）由 cet6-apk 构建脚本第 0 步负责同步；
-// 若副本里残留了过期的 docs/ 目录，时间戳护栏保证旧文件不会反向覆盖新 assets。
+// 构建前自动把 docs/ 的网页同步进 assets/web，杜绝「改了网页或词库忘同步安卓」。
+// 由 Gradle Copy 任务原生增量快照比对 index.html 与 data.js 两者内容，不再使用脆弱的 mtime 护栏。
 val syncWebDocs = tasks.register<Copy>("syncWebDocs") {
     val docsDir = rootProject.projectDir.resolve("docs")
-    val webDir = layout.projectDirectory.dir("src/main/assets/web")
-    onlyIf {
-        val docsHtml = docsDir.resolve("index.html")
-        val curHtml = webDir.file("index.html").asFile
-        docsHtml.exists() && (!curHtml.exists() || docsHtml.lastModified() > curHtml.lastModified())
-    }
+    onlyIf { docsDir.resolve("index.html").exists() && docsDir.resolve("data.js").exists() }
     from(docsDir) { include("index.html", "data.js") }
-    into(webDir)
-    inputs.files(docsDir.resolve("index.html"), docsDir.resolve("data.js"))
+    into(layout.projectDirectory.dir("src/main/assets/web"))
 }
 tasks.named("preBuild") { dependsOn(syncWebDocs) }
 
